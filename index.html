@@ -218,9 +218,9 @@ window.addEventListener('load', function(){
     activityLogRef = db.ref('waqit_log');
     welcomeRef = db.ref('waqit_welcome');
     decRef = db.ref('waqit_deceased');
-    activityLogRef.once('value', function(snap){ var d=snap.val(); if(d && d.data) ACTIVITY_LOG = d.data; });
-    welcomeRef.on('value', function(snap){ var d=snap.val(); if(d && d.data) { WELCOME_TEXT = d.data; var we=document.getElementById('welcome-edit'); if(we && !we.value) we.value = WELCOME_TEXT; } });
-    decRef.on('value', function(snap){ var d=snap.val(); if(d && d.data) { DECEASED = d.data; updateDeceasedInTree(); } });
+    activityLogRef.once('value', function(snap){ var d=snap.val(); if(d && Array.isArray(d)) ACTIVITY_LOG = d; });
+    welcomeRef.on('value', function(snap){ var d=snap.val(); if(d && typeof d==='string') { WELCOME_TEXT = d; var we=document.getElementById('welcome-edit'); if(we && !we.value) we.value = WELCOME_TEXT; } });
+    decRef.on('value', function(snap){ var d=snap.val(); if(d && typeof d==='object') { DECEASED = d; updateDeceasedInTree(); } });
 
     // Load tree once on start
     treeRef.once('value', function(snap){
@@ -247,11 +247,10 @@ window.addEventListener('load', function(){
     // Load users
     usersRef.once('value', function(snap){
       var d = snap.val();
-      var dUsers = d && d.data ? d.data : null;
-      if(dUsers && Object.keys(dUsers).length > 0){
-        USERS = dUsers;
+      if(d && typeof d === 'object' && Object.keys(d).length > 0){
+        USERS = d;
       } else {
-        usersRef.set({_secret:APP_SECRET, data:USERS});
+        usersRef.set(USERS);
       }
     });
 
@@ -280,7 +279,7 @@ function saveToFirebase(){
 }
 
 function saveUsersToFirebase(){
-  if(typeof usersRef !== 'undefined' && usersRef) usersRef.set({_secret:APP_SECRET, data:USERS});
+  if(typeof usersRef !== 'undefined' && usersRef) usersRef.set(USERS);
 }
 
 </script>
@@ -1500,7 +1499,7 @@ function logActivity(action, details){
   };
   ACTIVITY_LOG.unshift(entry);
   if(ACTIVITY_LOG.length > 200) ACTIVITY_LOG = ACTIVITY_LOG.slice(0, 200);
-  if(typeof activityLogRef !== 'undefined' && activityLogRef) activityLogRef.set({_secret:APP_SECRET, data:ACTIVITY_LOG});
+  if(typeof activityLogRef !== 'undefined' && activityLogRef) activityLogRef.set(ACTIVITY_LOG);
 }
 
 function openActivityLog(){
@@ -1575,7 +1574,7 @@ function saveWelcomeText(){
   var msg = document.getElementById('welcome-edit-msg');
   if(!txt){ msg.style.color='#f08080'; msg.textContent='\u0627\u0643\u062a\u0628 \u0646\u0635\u0627\u064b'; return; }
   WELCOME_TEXT = txt;
-  if(typeof welcomeRef !== 'undefined' && welcomeRef) welcomeRef.set({_secret:APP_SECRET, data:WELCOME_TEXT});
+  if(typeof welcomeRef !== 'undefined' && welcomeRef) welcomeRef.set(WELCOME_TEXT);
   msg.style.color='#4ade80';
   msg.textContent='\u2713 \u062a\u0645 \u0627\u0644\u062d\u0641\u0638';
   setTimeout(function(){msg.textContent='';},2000);
@@ -1788,7 +1787,7 @@ function updateDeceasedInTree(){
 }
 
 function saveDeceasedToFirebase(){
-  if(typeof decRef !== 'undefined' && decRef) decRef.set({_secret:APP_SECRET, data:DECEASED});
+  if(typeof decRef !== 'undefined' && decRef) decRef.set(DECEASED);
 }
 
 var deferredInstallPrompt = null;
