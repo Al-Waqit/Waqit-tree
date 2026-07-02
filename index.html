@@ -209,54 +209,7 @@ var db, treeRef, usersRef;
 var firebaseReady = false;
 var APP_SECRET = 'ZHKhOBDZ0JLAPxT2pzNLoCGzoQRQiOH8';
 
-window.addEventListener('DOMContentLoaded', function(){
-  try{
-    firebase.initializeApp({databaseURL:'https://wqit-tree-68f81-default-rtdb.firebaseio.com'});
-    db = firebase.database();
-    treeRef = db.ref('waqit_tree');
-    usersRef = db.ref('waqit_users');
-    activityLogRef = db.ref('waqit_log');
-    welcomeRef = db.ref('waqit_welcome');
-    decRef = db.ref('waqit_deceased');
-    activityLogRef.once('value', function(snap){ var d=snap.val(); if(d && Array.isArray(d)) ACTIVITY_LOG = d; });
-    welcomeRef.on('value', function(snap){ var d=snap.val(); if(d && typeof d==='string') { WELCOME_TEXT = d; var we=document.getElementById('welcome-edit'); if(we && !we.value) we.value = WELCOME_TEXT; } });
-    decRef.on('value', function(snap){ var d=snap.val(); if(d && typeof d==='object') { DECEASED = d; updateDeceasedInTree(); } });
 
-    // Load tree once on start
-    treeRef.once('value', function(snap){
-      var saved = snap.val();
-      if(saved && saved.c && saved.c.length > 0){
-        TREE.c = saved.c;
-        rebuildTreeDOM();
-      } else {
-        console.log('Firebase empty - uploading tree...');
-        treeRef.set(TREE).then(function(){ console.log('Tree uploaded OK!'); }).catch(function(e){ console.log('Upload failed:', e); });
-      }
-      firebaseReady = true;
-
-      // Real-time listener - no firebaseReady check so updates always come through
-      treeRef.on('value', function(snap2){
-        var d = snap2.val();
-        if(d && d.c && d.c.length > 0){
-          TREE.c = d.c;
-          rebuildTreeDOM();
-          updateDeceasedInTree();
-        }
-      });
-    });
-
-    // Load users
-    usersRef.once('value', function(snap){
-      var d = snap.val();
-      if(d && typeof d === 'object' && Object.keys(d).length > 0){
-        USERS = d;
-      } else {
-        usersRef.set(USERS);
-      }
-    });
-
-  }catch(e){ console.log('Firebase error:', e); }
-});
 
 function fixArrays(node){
   if(!node) return node;
@@ -1851,6 +1804,54 @@ if(window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
   var ibtn = document.getElementById('install-btn');
   if(ibtn) ibtn.style.display = 'none';
 }
-</script>
+
+window.addEventListener('DOMContentLoaded', function(){
+  try{
+    firebase.initializeApp({databaseURL:'https://wqit-tree-68f81-default-rtdb.firebaseio.com'});
+    db = firebase.database();
+    treeRef = db.ref('waqit_tree');
+    usersRef = db.ref('waqit_users');
+    activityLogRef = db.ref('waqit_log');
+    welcomeRef = db.ref('waqit_welcome');
+    decRef = db.ref('waqit_deceased');
+    activityLogRef.once('value', function(snap){ var d=snap.val(); if(d && Array.isArray(d)) ACTIVITY_LOG = d; });
+    welcomeRef.on('value', function(snap){ var d=snap.val(); if(d && typeof d==='string') { WELCOME_TEXT = d; var we=document.getElementById('welcome-edit'); if(we && !we.value) we.value = WELCOME_TEXT; } });
+    decRef.on('value', function(snap){ var d=snap.val(); if(d && typeof d==='object') { DECEASED = d; updateDeceasedInTree(); } });
+
+    // Load tree once on start
+    treeRef.once('value', function(snap){
+      var saved = snap.val();
+      if(saved && saved.c && saved.c.length > 0){
+        TREE.c = saved.c;
+        rebuildTreeDOM();
+      } else {
+        console.log('Firebase empty - uploading tree...');
+        treeRef.set(TREE).then(function(){ console.log('Tree uploaded OK!'); }).catch(function(e){ console.log('Upload failed:', e); });
+      }
+      firebaseReady = true;
+
+      // Real-time listener - no firebaseReady check so updates always come through
+      treeRef.on('value', function(snap2){
+        var d = snap2.val();
+        if(d && d.c && d.c.length > 0){
+          TREE.c = d.c;
+          rebuildTreeDOM();
+          updateDeceasedInTree();
+        }
+      });
+    });
+
+    // Load users
+    usersRef.once('value', function(snap){
+      var d = snap.val();
+      if(d && typeof d === 'object' && Object.keys(d).length > 0){
+        USERS = d;
+      } else {
+        usersRef.set(USERS);
+      }
+    });
+
+  }catch(e){ console.log('Firebase error:', e); }
+});</script>
 </body>
 </html>
