@@ -1,6 +1,5 @@
-const CACHE_NAME = 'waqit-tree-v1';
+const CACHE_NAME = 'waqit-tree-v2';
 const urlsToCache = [
-  './index.html',
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png'
@@ -33,17 +32,36 @@ self.addEventListener('activate', function(event) {
 });
 
 self.addEventListener('fetch', function(event) {
-  // Network-first for Firebase/API calls, cache-first for static assets
+  // Never intercept Firebase/API calls
   if (event.request.url.indexOf('firebaseio.com') !== -1 ||
       event.request.url.indexOf('firebasejs') !== -1 ||
       event.request.url.indexOf('gstatic.com') !== -1) {
-    return; // let these go straight to network, don't intercept
+    return;
   }
+
+  // Network-first for the HTML page itself, so updates are picked up immediately.
+  // Falls back to cache only if the network request fails (offline).
+  var isPageRequest = event.request.mode === 'navigate' ||
+      event.request.url.indexOf('index.html') !== -1 ||
+      event.request.url.endsWith('/');
+
+  if (isPageRequest) {
+    event.respondWith(
+      fetch(event.request).then(function(response) {
+        var copy = response.clone();
+        caches.open(CACHE_NAME).then(function(cache){ cache.put(event.request, copy); });
+        return response;
+      }).catch(function(){
+        return caches.match(event.request).then(function(r){ return r || caches.match('./index.html'); });
+      })
+    );
+    return;
+  }
+
+  // Cache-first for static assets (icons, manifest) that rarely change.
   event.respondWith(
     caches.match(event.request).then(function(response) {
-      return response || fetch(event.request).catch(function(){
-        return caches.match('./index.html');
-      });
+      return response || fetch(event.request);
     })
   );
 });
