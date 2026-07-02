@@ -270,6 +270,14 @@ function rebuildTreeDOM(){
 function saveToFirebase(){
   if(typeof treeRef !== 'undefined' && treeRef) treeRef.set(TREE);
 }
+function refreshTreeThen(fn){
+  if(typeof treeRef === 'undefined' || !treeRef){ fn(); return; }
+  treeRef.once('value', function(snap){
+    var d = snap.val();
+    if(d && d.c && d.c.length > 0){ TREE.c = d.c; }
+    fn();
+  }, function(){ fn(); });
+}
 
 function saveUsersToFirebase(){
   if(typeof usersRef !== 'undefined' && usersRef) usersRef.set(USERS);
@@ -553,6 +561,7 @@ function saveUsersToFirebase(){
         <div style="font-size:12px;color:#C5A880;font-family:'Scheherazade New',serif;margin-bottom:6px">نص الرسالة الترحيبية</div>
         <textarea id="welcome-edit" rows="4" style="width:100%;padding:10px;background:#2E2E2E;border:1px solid #555;border-radius:10px;color:#E0E0E0;font-family:'Scheherazade New',serif;font-size:13px;resize:none;direction:rtl;text-align:right;box-sizing:border-box;outline:none;margin-bottom:8px"></textarea>
         <button onclick="saveWelcomeText()" class="login-btn" style="background:#4A3B32">حفظ الرسالة</button>
+        <button onclick="previewWelcome()" class="login-btn" style="background:#2A3A4A;margin-top:6px">👁 معاينة الرسالة الآن</button>
         <div id="welcome-edit-msg" style="color:#4ade80;font-size:11px;text-align:center;margin-top:6px;font-family:'Scheherazade New',serif"></div>
       </div>
     </div>
@@ -1031,51 +1040,56 @@ function saveNewPerson(){
   var msg=document.getElementById('add-msg');
   if(!selFather){msg.style.color='#f08080';msg.textContent='\u26a0 \u0627\u062e\u062a\u0631 \u0627\u0644\u0623\u0628';return;}
   if(!nm){msg.style.color='#f08080';msg.textContent='\u26a0 \u0627\u0643\u062a\u0628 \u0627\u0644\u0627\u0633\u0645';return;}
-  // Use path to find node for reliability
-  var fN=null;
-  if(selFather.path&&selFather.path.length>0){
-    var p=selFather.path;var cur=TREE;
-    for(var pi=1;pi<p.length&&cur;pi++){if(!cur.c)break;for(var ci=0;ci<cur.c.length;ci++){if(cur.c[ci].n===p[pi]){cur=cur.c[ci];break;}}}
-    if(cur&&cur.n===p[p.length-1])fN=cur;
-  }
-  if(!fN)fN=findN(selFather.name,TREE);
-  if(!fN)return;
-  if(!fN.c)fN.c=[];
-  fN.c.push({n:nm});
-  ALL_ENTRIES=getAllEntries(TREE,[],[]);
-  // Rebuild entire tree so all click listeners work correctly
-  var treeEl=document.getElementById('tree');
-  var old=treeEl.querySelector('.nw');if(old)treeEl.removeChild(old);
-  treeEl.appendChild(build(TREE,0));
-  updateDeceasedInTree();
-  if(typeof saveToFirebase!=='undefined')saveToFirebase();
-  if(typeof logActivity!=='undefined')logActivity('add','\u062a\u0645\u062a \u0625\u0636\u0627\u0641\u0629 '+nm+' \u0627\u0628\u0646 '+selFather.name);
-  msg.style.color='#4ade80';msg.textContent='\u2713 \u062a\u0645\u062a \u0625\u0636\u0627\u0641\u0629 '+nm;
-  document.getElementById('add-new-name').value='';
-  selFather=null;
-  document.getElementById('add-father-q').value='';
-  document.getElementById('selected-father').style.display='none';
-  setTimeout(function(){msg.textContent='';closeAddModal();},2000);
+  var fatherRef = selFather;
+  refreshTreeThen(function(){
+    // Use path to find node for reliability
+    var fN=null;
+    if(fatherRef.path&&fatherRef.path.length>0){
+      var p=fatherRef.path;var cur=TREE;
+      for(var pi=1;pi<p.length&&cur;pi++){if(!cur.c)break;for(var ci=0;ci<cur.c.length;ci++){if(cur.c[ci].n===p[pi]){cur=cur.c[ci];break;}}}
+      if(cur&&cur.n===p[p.length-1])fN=cur;
+    }
+    if(!fN)fN=findN(fatherRef.name,TREE);
+    if(!fN)return;
+    if(!fN.c)fN.c=[];
+    fN.c.push({n:nm});
+    ALL_ENTRIES=getAllEntries(TREE,[],[]);
+    // Rebuild entire tree so all click listeners work correctly
+    var treeEl=document.getElementById('tree');
+    var old=treeEl.querySelector('.nw');if(old)treeEl.removeChild(old);
+    treeEl.appendChild(build(TREE,0));
+    updateDeceasedInTree();
+    if(typeof saveToFirebase!=='undefined')saveToFirebase();
+    if(typeof logActivity!=='undefined')logActivity('add','\u062a\u0645\u062a \u0625\u0636\u0627\u0641\u0629 '+nm+' \u0627\u0628\u0646 '+fatherRef.name);
+    msg.style.color='#4ade80';msg.textContent='\u2713 \u062a\u0645\u062a \u0625\u0636\u0627\u0641\u0629 '+nm;
+    document.getElementById('add-new-name').value='';
+    selFather=null;
+    document.getElementById('add-father-q').value='';
+    document.getElementById('selected-father').style.display='none';
+    setTimeout(function(){msg.textContent='';closeAddModal();},2000);
+  });
 }
 
 function confirmDelete(){
   var msg=document.getElementById('del-msg');
   if(!selDel){msg.style.color='#f08080';msg.textContent='\u26a0 \u0627\u062e\u062a\u0631 \u0634\u062e\u0635\u0627\u064b';return;}
   var nm=selDel.name;
-  removeN(nm,TREE);
-  // Rebuild full tree so click listeners stay intact
-  var treeEl=document.getElementById('tree');
-  var oldEl=treeEl.querySelector('.nw');if(oldEl)treeEl.removeChild(oldEl);
-  treeEl.appendChild(build(TREE,0));
-  ALL_ENTRIES=getAllEntries(TREE,[],[]);
-  updateDeceasedInTree();
-  if(typeof saveToFirebase!=='undefined')saveToFirebase();
-  if(typeof logActivity!=='undefined')logActivity('delete','\u062a\u0645 \u062d\u0630\u0641 '+nm);
-  msg.style.color='#4ade80';msg.textContent='\u2713 \u062a\u0645 \u062d\u0630\u0641 '+nm;
-  selDel=null;
-  document.getElementById('del-q').value='';
-  document.getElementById('selected-del').style.display='none';
-  setTimeout(function(){msg.textContent='';closeAddModal();},2000);
+  refreshTreeThen(function(){
+    removeN(nm,TREE);
+    // Rebuild full tree so click listeners stay intact
+    var treeEl=document.getElementById('tree');
+    var oldEl=treeEl.querySelector('.nw');if(oldEl)treeEl.removeChild(oldEl);
+    treeEl.appendChild(build(TREE,0));
+    ALL_ENTRIES=getAllEntries(TREE,[],[]);
+    updateDeceasedInTree();
+    if(typeof saveToFirebase!=='undefined')saveToFirebase();
+    if(typeof logActivity!=='undefined')logActivity('delete','\u062a\u0645 \u062d\u0630\u0641 '+nm);
+    msg.style.color='#4ade80';msg.textContent='\u2713 \u062a\u0645 \u062d\u0630\u0641 '+nm;
+    selDel=null;
+    document.getElementById('del-q').value='';
+    document.getElementById('selected-del').style.display='none';
+    setTimeout(function(){msg.textContent='';closeAddModal();},2000);
+  });
 }
 function toggleNasab(){var m=document.getElementById('nasab-modal'),o=document.getElementById('nasab-overlay');if(!m)return;var open=m.style.display==='flex';m.style.display=open?'none':'flex';o.style.display=open?'none':'block';if(!open&&document.getElementById('nc-chain')&&!document.getElementById('nc-chain').hasChildNodes())buildNasabChain();}
 function tog(id){var s=document.getElementById('sec-'+id),b=document.getElementById('btn-'+id);if(!s||!b)return;var open=s.style.display==='flex';s.style.display=open?'none':'flex';b.textContent=open?'\u25bc '+s.querySelectorAll('.nc-node').length+' \u0623\u062c\u062f\u0627\u062f \u2014 \u0627\u0636\u063a\u0637':'\u25b2 \u0625\u062e\u0641\u0627\u0621';}
@@ -1783,19 +1797,20 @@ function renderActivityLog(){
 var welcomeRef = null;
 var WELCOME_TEXT = '\u0645\u0631\u062d\u0628\u0627\u064b \u0628\u0643 \u0641\u064a \u0634\u062c\u0631\u0629 \u0630\u0648\u064a \u0648\u0642\u064a\u062a';
 
+function previewWelcome(){
+  var txt = document.getElementById('welcome-edit').value.trim() || WELCOME_TEXT;
+  document.getElementById('welcome-text').textContent = txt;
+  document.getElementById('welcome-overlay').style.display='block';
+  document.getElementById('welcome-modal').style.display='flex';
+}
 function checkFirstVisit(){
-  var seen = false;
-  try{ seen = sessionStorage.getItem('waqit_welcome_seen'); }catch(e){}
-  if(!seen){
-    document.getElementById('welcome-text').textContent = WELCOME_TEXT;
-    document.getElementById('welcome-overlay').style.display='block';
-    document.getElementById('welcome-modal').style.display='flex';
-  }
+  document.getElementById('welcome-text').textContent = WELCOME_TEXT;
+  document.getElementById('welcome-overlay').style.display='block';
+  document.getElementById('welcome-modal').style.display='flex';
 }
 function closeWelcome(){
   document.getElementById('welcome-overlay').style.display='none';
   document.getElementById('welcome-modal').style.display='none';
-  try{ sessionStorage.setItem('waqit_welcome_seen', '1'); }catch(e){}
 }
 function saveWelcomeText(){
   if(!isMainAdmin()) return;
@@ -2313,8 +2328,7 @@ function ppToggleEdit(){
 }
 function ppSaveEdit(){
   if(!getPerms().edit) return;
-  var node = ppFindNode(ppCurrentName);
-  if(!node) return;
+  var targetName = ppCurrentName;
   var newName = document.getElementById('pp-e-name').value.trim();
   var bp = document.getElementById('pp-e-bp').value.trim();
   var by = document.getElementById('pp-e-by').value.trim();
@@ -2323,36 +2337,40 @@ function ppSaveEdit(){
   var g = document.getElementById('pp-e-g').value;
   var bio = document.getElementById('pp-e-bio').value.trim();
   var dec = document.getElementById('pp-e-dec').checked;
-  var oldName = node.n;
-  if(newName) node.n = newName;
-  if(bp) node.bp = bp; else delete node.bp;
-  if(by) node.by = by; else delete node.by;
-  if(dy) node.dy = dy; else delete node.dy;
-  if(sp) node.sp = sp; else delete node.sp;
-  if(g) node.g = g; else delete node.g;
-  if(bio) node.bio = bio; else delete node.bio;
   var photoInput = document.getElementById('pp-e-photo-file');
-  if(photoInput && photoInput.dataset.value === '__remove__'){ delete node.photo; }
-  else if(photoInput && photoInput.dataset.value){ node.photo = photoInput.dataset.value; }
-  if(newName && newName !== oldName && DECEASED[oldName]){ delete DECEASED[oldName]; }
-  if(dec) DECEASED[node.n] = true; else delete DECEASED[node.n];
   var newHf = {};
   FV_LABELS.forEach(function(pair){
     var key = pair[0];
     var el = document.getElementById('pp-e-hf-'+key);
     if(el && el.checked) newHf[key] = true;
   });
-  if(Object.keys(newHf).length) node.hf = newHf; else delete node.hf;
-  ppCurrentName = node.n;
-  rebuildTreeDOM();
-  updateDeceasedInTree();
-  saveToFirebase();
-  saveDeceasedToFirebase();
-  if(typeof logActivity !== 'undefined') logActivity('edit','\u062a\u0645 \u062a\u0639\u062f\u064a\u0644 \u0628\u064a\u0627\u0646\u0627\u062a '+node.n);
-  document.getElementById('pp-editform').style.display='none';
-  renderPersonPage();
-  var msg = document.getElementById('pp-msg'); msg.style.color='#4ade80'; msg.textContent='\u2713 \u062a\u0645 \u0627\u0644\u062d\u0641\u0638';
-  setTimeout(function(){ msg.textContent=''; }, 2000);
+  refreshTreeThen(function(){
+    var node = ppFindNode(targetName);
+    if(!node) return;
+    var oldName = node.n;
+    if(newName) node.n = newName;
+    if(bp) node.bp = bp; else delete node.bp;
+    if(by) node.by = by; else delete node.by;
+    if(dy) node.dy = dy; else delete node.dy;
+    if(sp) node.sp = sp; else delete node.sp;
+    if(g) node.g = g; else delete node.g;
+    if(bio) node.bio = bio; else delete node.bio;
+    if(photoInput && photoInput.dataset.value === '__remove__'){ delete node.photo; }
+    else if(photoInput && photoInput.dataset.value){ node.photo = photoInput.dataset.value; }
+    if(newName && newName !== oldName && DECEASED[oldName]){ delete DECEASED[oldName]; }
+    if(dec) DECEASED[node.n] = true; else delete DECEASED[node.n];
+    if(Object.keys(newHf).length) node.hf = newHf; else delete node.hf;
+    ppCurrentName = node.n;
+    rebuildTreeDOM();
+    updateDeceasedInTree();
+    saveToFirebase();
+    saveDeceasedToFirebase();
+    if(typeof logActivity !== 'undefined') logActivity('edit','\u062a\u0645 \u062a\u0639\u062f\u064a\u0644 \u0628\u064a\u0627\u0646\u0627\u062a '+node.n);
+    document.getElementById('pp-editform').style.display='none';
+    renderPersonPage();
+    var msg = document.getElementById('pp-msg'); msg.style.color='#4ade80'; msg.textContent='\u2713 \u062a\u0645 \u0627\u0644\u062d\u0641\u0638';
+    setTimeout(function(){ msg.textContent=''; }, 2000);
+  });
 }
 function ppAddChild(){
   if(!getPerms().add) return;
@@ -2371,12 +2389,14 @@ function ppDelete(){
   var name = ppCurrentName;
   if(!name) return;
   if(!confirm('\u0647\u0644 \u0623\u0646\u062a \u0645\u062a\u0623\u0643\u062f \u0645\u0646 \u062d\u0630\u0641 '+name+'\u061f')) return;
-  removeN(name, TREE);
-  rebuildTreeDOM();
-  updateDeceasedInTree();
-  saveToFirebase();
-  if(typeof logActivity !== 'undefined') logActivity('delete','\u062a\u0645 \u062d\u0630\u0641 '+name+' \u0645\u0646 \u0635\u0641\u062d\u0629 \u0627\u0644\u062a\u0641\u0627\u0635\u064a\u0644');
-  closePersonPage();
+  refreshTreeThen(function(){
+    removeN(name, TREE);
+    rebuildTreeDOM();
+    updateDeceasedInTree();
+    saveToFirebase();
+    if(typeof logActivity !== 'undefined') logActivity('delete','\u062a\u0645 \u062d\u0630\u0641 '+name+' \u0645\u0646 \u0635\u0641\u062d\u0629 \u0627\u0644\u062a\u0641\u0627\u0635\u064a\u0644');
+    closePersonPage();
+  });
 }
 
 var deferredInstallPrompt = null;
