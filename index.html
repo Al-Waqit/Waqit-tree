@@ -140,7 +140,7 @@ footer{background:#242424;border-top:1px solid #3D3D3D;padding:36px 20px;text-al
 .f-name{font-size:20px;color:#C5A880;margin-bottom:6px;font-weight:700}
 .f-div{width:60px;height:1px;background:#C5A880;margin:12px auto;opacity:0.4}
 .f-info{font-size:12px;color:#B5ADA5;line-height:2.5;max-width:480px;margin:0 auto}
-.watermark{position:fixed;bottom:12px;left:16px;font-size:11px;color:#B5ADA5;z-index:999;pointer-events:none;font-family:'Scheherazade New',serif}
+.footer{width:100%;background:#171717;border-top:1px solid #2A2A2A;padding:20px 0;margin-top:40px;text-align:center;font-family:'Scheherazade New',serif;direction:rtl}.footer-divider{width:60px;height:2px;background:linear-gradient(to right,transparent,#C5A880,transparent);margin:10px auto}.footer-name{font-size:14px;color:#C5A880;font-weight:700;margin:4px 0}.footer-role{font-size:12px;color:#888;margin:2px 0}.footer-sep{color:#444;margin:0 8px}.footer-copy{font-size:11px;color:#555;margin-top:10px}
 .zoom-btns{position:fixed;bottom:50px;right:16px;z-index:998;display:flex;flex-direction:column;gap:8px}
 .zoom-btn{width:40px;height:40px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);background:rgba(30,30,30,0.6);backdrop-filter:blur(8px);color:rgba(255,255,255,0.7);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;-webkit-backdrop-filter:blur(8px)}
 .zoom-btn:hover{background:rgba(59,77,64,0.7);border-color:rgba(255,255,255,0.2)}
@@ -516,7 +516,22 @@ function saveUsersToFirebase(){
   </div>
   <button onclick="closeInstallModal()" style="width:100%;padding:11px;border:1px solid #444;border-radius:12px;background:transparent;color:#888;font-family:'Scheherazade New',serif;font-size:14px;cursor:pointer;margin-top:8px">إغلاق</button>
 </div>
-<div class="watermark">جمع وإعداد وتدقيق: عبدالرحمن ضيف الله الرحيمي<br>صنع بحب من ياسر سالم الرحيمي © 2026</div>
+<footer class="footer">
+  <div class="footer-divider"></div>
+  <div style="display:flex;justify-content:center;align-items:center;gap:20px;flex-wrap:wrap;padding:0 20px">
+    <div>
+      <div class="footer-role">جمع وإعداد وتدقيق</div>
+      <div class="footer-name">عبدالرحمن ضيف الله الرحيمي</div>
+    </div>
+    <div style="color:#333;font-size:20px">•</div>
+    <div>
+      <div class="footer-role">صنع بحب من</div>
+      <div class="footer-name">ياسر سالم الرحيمي</div>
+    </div>
+  </div>
+  <div class="footer-divider"></div>
+  <div class="footer-copy">جميع الحقوق محفوظة © 2026</div>
+</footer>
 
 <script>
 const TREE = {n:"\u0648\u0642\u064a\u062a",c:[
