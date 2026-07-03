@@ -416,7 +416,6 @@ function saveUsersToFirebase(){
     <div class="h-ribbon-links">
       <a onclick="window.scrollTo({top:0,behavior:'smooth'})">الرئيسية</a>
       <a onclick="document.querySelector('.tree-area').scrollIntoView({behavior:'smooth'})">الشجرة التفاعلية</a>
-      <a onclick="openSidebar()">أفراد العائلة</a>
       <a id="ribbon-nasab-link" onclick="toggleNasab()">النسب إلى آدم</a>
       <a onclick="openSubtreeModal()">شجرة فرعية</a>
       <a onclick="openCompareModal()">مقارنة</a>
@@ -1988,17 +1987,38 @@ var publicEditRef = null;
 function togglePublicEdit(){
   var chk = document.getElementById('public-edit-toggle');
   PUBLIC_EDIT = chk.checked;
-  if(typeof publicEditRef !== 'undefined' && publicEditRef) publicEditRef.set(PUBLIC_EDIT);
   updateAuthUI();
+  if(typeof publicEditRef !== 'undefined' && publicEditRef){
+    showSavingIndicator();
+    pendingSaveCount++;
+    publicEditRef.set(PUBLIC_EDIT).then(function(){ pendingSaveCount--; hideSavingIndicator(true); }).catch(function(e){ pendingSaveCount--; hideSavingIndicator(false); console.log('Save failed:', e); });
+  }
 }
 function togglePhotoFeature(){
   if(!(currentUser && USERS[currentUser] && USERS[currentUser].protected)) return;
   var chk = document.getElementById('photo-feature-toggle');
-  FIELD_VIS.photo = chk.checked;
-  if(typeof fieldVisRef !== 'undefined' && fieldVisRef) fieldVisRef.set(FIELD_VIS);
+  var newVal = chk.checked;
   var msg = document.getElementById('fv-msg');
-  if(msg){ msg.style.color='#16A34A'; msg.textContent='\u2713 \u062a\u0645 \u0627\u0644\u062d\u0641\u0638'; setTimeout(function(){msg.textContent='';},1500); }
-  if(ppCurrentName) renderPersonPage();
+  if(typeof fieldVisRef !== 'undefined' && fieldVisRef){
+    showSavingIndicator();
+    pendingSaveCount++;
+    fieldVisRef.transaction(function(current){
+      current = current || {};
+      current.photo = newVal;
+      return current;
+    }, function(error, committed, snapshot){
+      pendingSaveCount--;
+      if(error || !committed){ hideSavingIndicator(false); return; }
+      var d = snapshot ? snapshot.val() : null;
+      if(d && typeof d === 'object') FIELD_VIS = d;
+      hideSavingIndicator(true);
+      if(msg){ msg.style.color='#16A34A'; msg.textContent='\u2713 \u062a\u0645 \u0627\u0644\u062d\u0641\u0638'; setTimeout(function(){msg.textContent='';},1500); }
+      if(ppCurrentName) renderPersonPage();
+    }, false);
+  } else {
+    FIELD_VIS.photo = newVal;
+    if(ppCurrentName) renderPersonPage();
+  }
 }
 function renderFieldVisToggles(){
   var list = document.getElementById('fv-list');
@@ -2011,12 +2031,30 @@ function renderFieldVisToggles(){
     var span = document.createElement('span'); span.textContent = label; row.appendChild(span);
     var chk = document.createElement('input'); chk.type='checkbox'; chk.checked = FIELD_VIS[key] !== false;
     chk.addEventListener('change', function(){
-      FIELD_VIS[key] = chk.checked;
-      if(typeof fieldVisRef !== 'undefined' && fieldVisRef) fieldVisRef.set(FIELD_VIS);
+      var newVal = chk.checked;
       var msg = document.getElementById('fv-msg');
-      if(msg){ msg.style.color='#16A34A'; msg.textContent='\u2713 \u062a\u0645 \u0627\u0644\u062d\u0641\u0638'; setTimeout(function(){msg.textContent='';},1500); }
-      if(ppCurrentName) renderPersonPage();
-      applyGlobalToggles();
+      if(typeof fieldVisRef !== 'undefined' && fieldVisRef){
+        showSavingIndicator();
+        pendingSaveCount++;
+        fieldVisRef.transaction(function(current){
+          current = current || {};
+          current[key] = newVal;
+          return current;
+        }, function(error, committed, snapshot){
+          pendingSaveCount--;
+          if(error || !committed){ hideSavingIndicator(false); return; }
+          var d = snapshot ? snapshot.val() : null;
+          if(d && typeof d === 'object') FIELD_VIS = d;
+          hideSavingIndicator(true);
+          if(msg){ msg.style.color='#16A34A'; msg.textContent='\u2713 \u062a\u0645 \u0627\u0644\u062d\u0641\u0638'; setTimeout(function(){msg.textContent='';},1500); }
+          if(ppCurrentName) renderPersonPage();
+          applyGlobalToggles();
+        }, false);
+      } else {
+        FIELD_VIS[key] = newVal;
+        if(ppCurrentName) renderPersonPage();
+        applyGlobalToggles();
+      }
     });
     row.appendChild(chk);
     list.appendChild(row);
@@ -2688,7 +2726,7 @@ if(window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
   if(ibtn) ibtn.style.display = 'none';
 }
 
-window.addEventListener('load', function(){
+(function(){
   try{
     firebase.initializeApp({databaseURL:'https://wqit-tree-68f81-default-rtdb.firebaseio.com'});
     db = firebase.database();
@@ -2757,6 +2795,6 @@ window.addEventListener('load', function(){
     });
 
   }catch(e){ console.log('Firebase error:', e); }
-});</script>
+})();</script>
 </body>
 </html>
