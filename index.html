@@ -247,9 +247,7 @@ footer{background:#FBF8F2;border-top:1px solid #E3D6BC;padding:36px 20px;text-al
 .wm-icon{width:64px;height:64px;border-radius:50%;background:linear-gradient(180deg,#E8D2A0,#C5A880);border:3px solid #F0E6D2;box-shadow:0 6px 18px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 12px;position:relative;z-index:1}
 .wm-title{color:#FAF8F5;font-size:20px;font-weight:800;font-family:'Scheherazade New',serif;position:relative;z-index:1;text-shadow:0 2px 6px rgba(0,0,0,0.3)}
 
-.dec-label{display:block;font-size:8px;color:#C5A880;opacity:0.9;margin-top:3px;font-family:'Scheherazade New',serif;font-style:italic;letter-spacing:0.5px}
-
-.dec-label{display:block;font-size:8px;color:#C5A880;opacity:0.9;margin-top:3px;font-family:'Scheherazade New',serif;font-style:italic;letter-spacing:0.5px}
+.dec-label-inline{font-size:9.5px;color:#8A7A63;font-family:'Scheherazade New',serif;font-style:italic;white-space:nowrap}
 .dec-sug{position:absolute;top:100%;right:0;left:0;background:#EFE7D8;border:1px solid #5C4D42;border-top:none;border-radius:0 0 12px 12px;max-height:200px;overflow-y:auto;z-index:10;display:none}
 
 #install-btn{display:none;position:fixed;bottom:80px;left:12px;z-index:1000;background:#3B4D40;border:1px solid #C5A880;color:#C5A880;padding:8px 14px;border-radius:12px;font-family:'Scheherazade New',serif;font-size:12px;cursor:pointer;font-weight:600}
@@ -966,9 +964,16 @@ function makeCard(d, lv, isSpouseCard, fatherName, path){
   else { av.textContent = initialsOf(d.n); }
   av.title = '\u0639\u0631\u0636 \u0627\u0644\u0645\u0644\u0641 \u0627\u0644\u0634\u062e\u0635\u064a';
   p.appendChild(av);
+  var nameWrap = document.createElement('span'); nameWrap.style.cssText='display:inline-flex;align-items:baseline;gap:4px';
   var nm = document.createElement('span'); nm.className='np-name';
   nm.textContent = d.n;
-  p.appendChild(nm);
+  nameWrap.appendChild(nm);
+  if(d.dead){
+    var dl = document.createElement('span'); dl.className='dec-label-inline';
+    dl.textContent = '(\u0631\u062d\u0645\u0647 \u0627\u0644\u0644\u0647)';
+    nameWrap.appendChild(dl);
+  }
+  p.appendChild(nameWrap);
   if(d.by || d.dy){
     var dt = document.createElement('span'); dt.className='np-dates';
     dt.textContent = (d.by||'') + ' \u2013 ' + (d.dy||'');
@@ -2291,7 +2296,8 @@ function searchDec(){
       document.getElementById('dec-q').value=e.name;
       s.style.display='none';
       var sd=document.getElementById('selected-dec');
-      sd.textContent=DECEASED[e.name]?'\u2713 \u0645\u0633\u062c\u0644 \u0643\u0645\u062a\u0648\u0641\u0649 - \u0627\u0636\u063a\u0637 \u062d\u0641\u0638 \u0644\u0625\u0644\u063a\u0627\u0621':'\u0627\u0636\u063a\u0637 \u062d\u0641\u0638 \u0644\u062a\u062d\u062f\u064a\u062f\u0647 \u0643\u0645\u062a\u0648\u0641\u0649';
+      var nd = findNodeByPath(e.path);
+      sd.textContent=(nd && nd.dead)?'\u2713 \u0645\u0633\u062c\u0644 \u0643\u0645\u062a\u0648\u0641\u0649 - \u0627\u0636\u063a\u0637 \u062d\u0641\u0638 \u0644\u0625\u0644\u063a\u0627\u0621':'\u0627\u0636\u063a\u0637 \u062d\u0641\u0638 \u0644\u062a\u062d\u062f\u064a\u062f\u0647 \u0643\u0645\u062a\u0648\u0641\u0649';
       sd.style.display='block';
     };
     s.appendChild(it);
@@ -2303,35 +2309,34 @@ function toggleDeceased(){
   var msg=document.getElementById('dec-msg');
   if(!selDec){msg.style.color='#B23A3A';msg.textContent='\u0627\u062e\u062a\u0631 \u0634\u062e\u0635\u0627\u064b \u0623\u0648\u0644\u0627\u064b';return;}
   var name=selDec.name;
-  if(DECEASED[name]){
-    delete DECEASED[name];
-    msg.textContent='\u062a\u0645 \u0625\u0644\u063a\u0627\u0621 \u062a\u062d\u062f\u064a\u062f '+name;
-  } else {
-    DECEASED[name]=true;
-    msg.textContent='\u062a\u0645 \u062a\u062d\u062f\u064a\u062f '+name+' \u0643\u0645\u062a\u0648\u0641\u0649';
-  }
-  msg.style.color='#16A34A';
-  updateDeceasedInTree();
-  if(typeof saveDeceasedToFirebase!=='undefined')saveDeceasedToFirebase();
-  if(typeof logActivity!=='undefined')logActivity('edit', name+' '+(DECEASED[name]?'\u0645\u062a\u0648\u0641\u0649':'\u0625\u0644\u063a\u0627\u0621 \u062a\u062d\u062f\u064a\u062f \u0627\u0644\u0648\u0641\u0627\u0629'));
-  selDec=null;
-  document.getElementById('dec-q').value='';
-  document.getElementById('selected-dec').style.display='none';
-  setTimeout(function(){msg.textContent='';closeAddModal();},1500);
+  var path=selDec.path;
+  transactTree(function(working){
+    var nd = path ? findNodeByPath(path, working) : null;
+    if(!nd) nd = findN(name, working);
+    if(!nd) return false;
+    if(nd.dead) delete nd.dead; else nd.dead = true;
+  }, function(ok, reason){
+    if(!ok){
+      msg.style.color='#B23A3A';
+      msg.textContent = reason==='not_found' ? '\u26a0 \u062a\u0639\u0630\u0651\u0631 \u0625\u064a\u062c\u0627\u062f \u0627\u0644\u0634\u062e\u0635' : '\u26a0 \u0641\u0634\u0644 \u0627\u0644\u062d\u0641\u0638\u060c \u062d\u0627\u0648\u0644 \u0645\u0631\u0629 \u062b\u0627\u0646\u064a\u0629';
+      return;
+    }
+    rebuildTreeDOM();
+    var nowNode = findNodeByPath(path);
+    msg.style.color='#16A34A';
+    msg.textContent = (nowNode && nowNode.dead) ? '\u062a\u0645 \u062a\u062d\u062f\u064a\u062f '+name+' \u0643\u0645\u062a\u0648\u0641\u0649' : '\u062a\u0645 \u0625\u0644\u063a\u0627\u0621 \u062a\u062d\u062f\u064a\u062f '+name;
+    if(typeof logActivity!=='undefined')logActivity('edit', name+' '+((nowNode && nowNode.dead)?'\u0645\u062a\u0648\u0641\u0649':'\u0625\u0644\u063a\u0627\u0621 \u062a\u062d\u062f\u064a\u062f \u0627\u0644\u0648\u0641\u0627\u0629'));
+    selDec=null;
+    document.getElementById('dec-q').value='';
+    document.getElementById('selected-dec').style.display='none';
+    setTimeout(function(){msg.textContent='';closeAddModal();},1500);
+  });
 }
 
 function updateDeceasedInTree(){
-  document.querySelectorAll('.np').forEach(function(p){
-    var name=p.getAttribute('data-name');
-    var ex=p.querySelector('.dec-label');
-    if(ex)ex.remove();
-    if(DECEASED[name]){
-      var lbl=document.createElement('span');
-      lbl.className='dec-label';
-      lbl.textContent='(\u0631\u062d\u0645\u0647 \u0627\u0644\u0644\u0647)';
-      p.appendChild(lbl);
-    }
-  });
+  // Deprecated: deceased labels are now rendered inline per-node in makeCard()
+  // based on node.dead, avoiding the old name-collision bug. Kept as a no-op
+  // so existing call sites don't break.
 }
 
 // ===== DECEASED =====
@@ -2367,7 +2372,8 @@ function searchDec(){
       document.getElementById('dec-q').value=fullName;
       s.style.display='none';
       var sd=document.getElementById('selected-dec');
-      sd.textContent=DECEASED[e.name]?'\u2713 \u0645\u0633\u062c\u0644 \u0643\u0645\u062a\u0648\u0641\u0649 - \u0627\u0636\u063a\u0637 \u062d\u0641\u0638 \u0644\u0625\u0644\u063a\u0627\u0621':'\u0627\u0636\u063a\u0637 \u062d\u0641\u0638 \u0644\u062a\u062d\u062f\u064a\u062f\u0647 \u0643\u0645\u062a\u0648\u0641\u0649';
+      var nd = findNodeByPath(e.path);
+      sd.textContent=(nd && nd.dead)?'\u2713 \u0645\u0633\u062c\u0644 \u0643\u0645\u062a\u0648\u0641\u0649 - \u0627\u0636\u063a\u0637 \u062d\u0641\u0638 \u0644\u0625\u0644\u063a\u0627\u0621':'\u0627\u0636\u063a\u0637 \u062d\u0641\u0638 \u0644\u062a\u062d\u062f\u064a\u062f\u0647 \u0643\u0645\u062a\u0648\u0641\u0649';
       sd.style.display='block';
     };
     s.appendChild(it);
@@ -2379,34 +2385,34 @@ function toggleDeceased(){
   var msg=document.getElementById('dec-msg');
   if(!selDec){msg.style.color='#B23A3A';msg.textContent='\u0627\u062e\u062a\u0631 \u0634\u062e\u0635\u0627\u064b \u0623\u0648\u0644\u0627\u064b';return;}
   var name=selDec.name;
-  if(DECEASED[name]){
-    delete DECEASED[name];
-    msg.textContent='\u062a\u0645 \u0625\u0644\u063a\u0627\u0621 \u062a\u062d\u062f\u064a\u062f '+name;
-  } else {
-    DECEASED[name]=true;
-    msg.textContent='\u062a\u0645 \u062a\u062d\u062f\u064a\u062f '+name+' \u0643\u0645\u062a\u0648\u0641\u0649';
-  }
-  msg.style.color='#16A34A';
-  updateDeceasedInTree();
-  if(typeof saveDeceasedToFirebase!=='undefined')saveDeceasedToFirebase();
-  selDec=null;
-  document.getElementById('dec-q').value='';
-  document.getElementById('selected-dec').style.display='none';
-  setTimeout(function(){msg.textContent='';closeAddModal();},1500);
+  var path=selDec.path;
+  transactTree(function(working){
+    var nd = path ? findNodeByPath(path, working) : null;
+    if(!nd) nd = findN(name, working);
+    if(!nd) return false;
+    if(nd.dead) delete nd.dead; else nd.dead = true;
+  }, function(ok, reason){
+    if(!ok){
+      msg.style.color='#B23A3A';
+      msg.textContent = reason==='not_found' ? '\u26a0 \u062a\u0639\u0630\u0651\u0631 \u0625\u064a\u062c\u0627\u062f \u0627\u0644\u0634\u062e\u0635' : '\u26a0 \u0641\u0634\u0644 \u0627\u0644\u062d\u0641\u0638\u060c \u062d\u0627\u0648\u0644 \u0645\u0631\u0629 \u062b\u0627\u0646\u064a\u0629';
+      return;
+    }
+    rebuildTreeDOM();
+    var nowNode = findNodeByPath(path);
+    msg.style.color='#16A34A';
+    msg.textContent = (nowNode && nowNode.dead) ? '\u062a\u0645 \u062a\u062d\u062f\u064a\u062f '+name+' \u0643\u0645\u062a\u0648\u0641\u0649' : '\u062a\u0645 \u0625\u0644\u063a\u0627\u0621 \u062a\u062d\u062f\u064a\u062f '+name;
+    if(typeof logActivity!=='undefined')logActivity('edit', name+' '+((nowNode && nowNode.dead)?'\u0645\u062a\u0648\u0641\u0649':'\u0625\u0644\u063a\u0627\u0621 \u062a\u062d\u062f\u064a\u062f \u0627\u0644\u0648\u0641\u0627\u0629'));
+    selDec=null;
+    document.getElementById('dec-q').value='';
+    document.getElementById('selected-dec').style.display='none';
+    setTimeout(function(){msg.textContent='';closeAddModal();},1500);
+  });
 }
 
 function updateDeceasedInTree(){
-  document.querySelectorAll('.np').forEach(function(p){
-    var name=p.getAttribute('data-name');
-    var ex=p.querySelector('.dec-label');
-    if(ex)ex.remove();
-    if(DECEASED[name]){
-      var lbl=document.createElement('span');
-      lbl.className='dec-label';
-      lbl.textContent='(\u0631\u062d\u0645\u0647 \u0627\u0644\u0644\u0647)';
-      p.appendChild(lbl);
-    }
-  });
+  // Deprecated: deceased labels are now rendered inline per-node in makeCard()
+  // based on node.dead, avoiding the old name-collision bug. Kept as a no-op
+  // so existing call sites don't break.
 }
 
 function saveDeceasedToFirebase(){
@@ -2539,7 +2545,7 @@ function renderPersonPage(){
   if(!node){ closePersonPage(); return; }
   var entry = ppFindEntry(name);
   var father = (entry && entry.path.length>1) ? entry.path[entry.path.length-2] : null;
-  var isDec = !!DECEASED[name];
+  var isDec = !!node.dead;
   var canEdit = ppCanEdit();
 
   var ppAv = document.getElementById('pp-avatar');
@@ -2681,7 +2687,7 @@ function ppToggleEdit(){
   form.appendChild(bioWrap);
 
   var decWrap = document.createElement('label'); decWrap.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:13px;color:#3B2F22';
-  var decChk = document.createElement('input'); decChk.type='checkbox'; decChk.id='pp-e-dec'; decChk.checked = !!DECEASED[node.n];
+  var decChk = document.createElement('input'); decChk.type='checkbox'; decChk.id='pp-e-dec'; decChk.checked = !!node.dead;
   decWrap.appendChild(decChk);
   var decTxt = document.createElement('span'); decTxt.textContent = '\u0645\u062a\u0648\u0641\u0649 (\u0631\u062d\u0645\u0647 \u0627\u0644\u0644\u0647)'; decWrap.appendChild(decTxt);
   form.appendChild(decWrap);
@@ -2701,12 +2707,59 @@ function ppToggleEdit(){
   });
   form.appendChild(hfWrap);
 
+  if(isMainAdmin() && ppCurrentPath && ppCurrentPath.length > 1){
+    var orderLabel = document.createElement('div'); orderLabel.style.cssText='font-size:11px;color:#8A7A63;margin:6px 0 8px';
+    orderLabel.textContent = '\u062a\u0631\u062a\u064a\u0628 \u0627\u0644\u0625\u062e\u0648\u0629 (\u0627\u0644\u0623\u0643\u0628\u0631 \u0644\u0644\u0623\u0635\u063a\u0631)';
+    form.appendChild(orderLabel);
+    var orderWrap = document.createElement('div'); orderWrap.style.cssText='display:flex;gap:8px;margin-bottom:14px';
+    var upBtn = document.createElement('button'); upBtn.type='button'; upBtn.className='pp-btn pp-btn-outline'; upBtn.style.flex='1';
+    upBtn.textContent = '\u25b2 \u0623\u0639\u0644\u0649 (\u0642\u0628\u0644)';
+    upBtn.onclick = function(){ ppMoveSibling(-1); };
+    var downBtn = document.createElement('button'); downBtn.type='button'; downBtn.className='pp-btn pp-btn-outline'; downBtn.style.flex='1';
+    downBtn.textContent = '\u25bc \u0623\u0633\u0641\u0644 (\u0628\u0639\u062f)';
+    downBtn.onclick = function(){ ppMoveSibling(1); };
+    orderWrap.appendChild(upBtn); orderWrap.appendChild(downBtn);
+    form.appendChild(orderWrap);
+  }
+
   var saveBtn = document.createElement('button'); saveBtn.className='pp-btn pp-btn-green'; saveBtn.style.width='100%';
   saveBtn.textContent='\u2713 \u062d\u0641\u0638 \u0627\u0644\u062a\u0639\u062f\u064a\u0644\u0627\u062a';
   saveBtn.onclick = ppSaveEdit;
   form.appendChild(saveBtn);
 
   form.style.display='block';
+}
+function ppMoveSibling(dir){
+  if(!isMainAdmin()) return;
+  if(!ppCurrentPath || ppCurrentPath.length < 2) return;
+  var path = ppCurrentPath;
+  var targetName = ppCurrentName;
+  transactTree(function(working){
+    var parentPath = path.slice(0, -1);
+    var parent = findNodeByPath(parentPath, working);
+    if(!parent || !parent.c) return false;
+    var idx = -1;
+    for(var i=0;i<parent.c.length;i++){ if(parent.c[i].n === path[path.length-1]){ idx = i; break; } }
+    if(idx === -1) return false;
+    var newIdx = idx + dir;
+    if(newIdx < 0 || newIdx >= parent.c.length) return false;
+    var tmp = parent.c[idx];
+    parent.c[idx] = parent.c[newIdx];
+    parent.c[newIdx] = tmp;
+  }, function(ok, reason){
+    var msg = document.getElementById('pp-msg');
+    if(!ok){
+      msg.style.color='#B23A3A';
+      msg.textContent = reason==='not_found' ? '\u26a0 \u0644\u0627 \u064a\u0648\u062c\u062f \u0623\u062e \u0641\u064a \u0647\u0630\u0627 \u0627\u0644\u0627\u062a\u062c\u0627\u0647' : '\u26a0 \u0641\u0634\u0644 \u0627\u0644\u062d\u0641\u0638\u060c \u062d\u0627\u0648\u0644 \u0645\u0631\u0629 \u062b\u0627\u0646\u064a\u0629';
+      setTimeout(function(){ msg.textContent=''; }, 2500);
+      return;
+    }
+    rebuildTreeDOM();
+    updateDeceasedInTree();
+    if(typeof logActivity !== 'undefined') logActivity('edit','\u062a\u0645 \u062a\u063a\u064a\u064a\u0631 \u062a\u0631\u062a\u064a\u0628 '+targetName);
+    msg.style.color='#16A34A'; msg.textContent='\u2713 \u062a\u0645 \u062a\u063a\u064a\u064a\u0631 \u0627\u0644\u062a\u0631\u062a\u064a\u0628';
+    setTimeout(function(){ msg.textContent=''; }, 2000);
+  });
 }
 function ppSaveEdit(){
   if(!getPerms().edit) return;
@@ -2739,8 +2792,7 @@ function ppSaveEdit(){
     if(bio) node.bio = bio; else delete node.bio;
     if(photoInput && photoInput.dataset.value === '__remove__'){ delete node.photo; }
     else if(photoInput && photoInput.dataset.value){ node.photo = photoInput.dataset.value; }
-    if(newName && newName !== oldName && DECEASED[oldName]){ delete DECEASED[oldName]; }
-    if(dec) DECEASED[node.n] = true; else delete DECEASED[node.n];
+    if(dec) node.dead = true; else delete node.dead;
     if(Object.keys(newHf).length) node.hf = newHf; else delete node.hf;
     if(newName && newName !== oldName && ppCurrentPath){
       ppCurrentPath = ppCurrentPath.slice(0, -1).concat([node.n]);
@@ -2883,7 +2935,28 @@ function initFirebaseApp(){
       var we=document.getElementById('welcome-edit'); if(we && !we.value) we.value = WELCOME_TEXT;
       if(typeof applyWelcomeAppearance==='function') applyWelcomeAppearance();
     });
-    decRef.on('value', function(snap){ var d=snap.val(); if(d && typeof d==='object') { DECEASED = d; updateDeceasedInTree(); } });
+    var decLoaded = false, decMigrationDone = false;
+    function tryMigrateDeceased(){
+      if(decMigrationDone) return;
+      if(!decLoaded) return;
+      if(!TREE.c || !TREE.c.length) return;
+      decMigrationDone = true;
+      var legacyNames = Object.keys(DECEASED);
+      if(legacyNames.length){
+        var migrated = false;
+        legacyNames.forEach(function(nm){
+          var nd = findN(nm, TREE);
+          if(nd && !nd.dead){ nd.dead = true; migrated = true; }
+        });
+        if(migrated){ rebuildTreeDOM(); saveToFirebase(); }
+      }
+    }
+    decRef.on('value', function(snap){
+      var d=snap.val();
+      if(d && typeof d==='object') DECEASED = d;
+      decLoaded = true;
+      tryMigrateDeceased();
+    });
     fieldVisRef.on('value', function(snap){ var d=snap.val(); if(d && typeof d==='object'){ FIELD_VIS = d; renderFieldVisToggles(); if(ppCurrentName) renderPersonPage(); } applyGlobalToggles(); });
 
     // Load tree once on start
@@ -2898,6 +2971,7 @@ function initFirebaseApp(){
         treeRef.set(TREE).then(function(){ console.log('Tree uploaded OK!'); }).catch(function(e){ console.log('Upload failed:', e); });
       }
       firebaseReady = true;
+      if(typeof tryMigrateDeceased === 'function') tryMigrateDeceased();
 
       // Real-time listener - no firebaseReady check so updates always come through
       treeRef.on('value', function(snap2){
