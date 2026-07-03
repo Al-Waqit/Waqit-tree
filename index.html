@@ -314,6 +314,31 @@ function refreshTreeThen(fn){
     fn();
   }, function(){ fn(); });
 }
+function transactTree(mutateFn, doneFn){
+  if(typeof treeRef === 'undefined' || !treeRef){
+    mutateFn(TREE);
+    if(doneFn) doneFn(true);
+    return;
+  }
+  showSavingIndicator();
+  pendingSaveCount++;
+  treeRef.transaction(function(currentData){
+    var working = (currentData && currentData.c) ? currentData : {n: TREE.n, c: (TREE.c || []).slice()};
+    mutateFn(working);
+    return working;
+  }, function(error, committed, snapshot){
+    pendingSaveCount--;
+    if(error || !committed){
+      hideSavingIndicator(false);
+      if(doneFn) doneFn(false);
+      return;
+    }
+    var d = snapshot ? snapshot.val() : null;
+    if(d && d.c) TREE.c = d.c;
+    hideSavingIndicator(true);
+    if(doneFn) doneFn(true);
+  }, false);
+}
 
 function saveUsersToFirebase(){
   if(typeof usersRef !== 'undefined' && usersRef) usersRef.set(USERS);
@@ -1078,25 +1103,20 @@ function saveNewPerson(){
   if(!selFather){msg.style.color='#f08080';msg.textContent='\u26a0 \u0627\u062e\u062a\u0631 \u0627\u0644\u0623\u0628';return;}
   if(!nm){msg.style.color='#f08080';msg.textContent='\u26a0 \u0627\u0643\u062a\u0628 \u0627\u0644\u0627\u0633\u0645';return;}
   var fatherRef = selFather;
-  refreshTreeThen(function(){
-    // Use path to find node for reliability
+  transactTree(function(working){
     var fN=null;
     if(fatherRef.path&&fatherRef.path.length>0){
-      var p=fatherRef.path;var cur=TREE;
-      for(var pi=1;pi<p.length&&cur;pi++){if(!cur.c)break;for(var ci=0;ci<cur.c.length;ci++){if(cur.c[ci].n===p[pi]){cur=cur.c[ci];break;}}}
-      if(cur&&cur.n===p[p.length-1])fN=cur;
+      fN = findNodeByPath(fatherRef.path, working);
     }
-    if(!fN)fN=findN(fatherRef.name,TREE);
+    if(!fN)fN=findN(fatherRef.name,working);
     if(!fN)return;
     if(!fN.c)fN.c=[];
     fN.c.push({n:nm});
+  }, function(ok){
+    if(!ok) return;
     ALL_ENTRIES=getAllEntries(TREE,[],[]);
-    // Rebuild entire tree so all click listeners work correctly
-    var treeEl=document.getElementById('tree');
-    var old=treeEl.querySelector('.nw');if(old)treeEl.removeChild(old);
-    treeEl.appendChild(build(TREE,0));
+    rebuildTreeDOM();
     updateDeceasedInTree();
-    if(typeof saveToFirebase!=='undefined')saveToFirebase();
     if(typeof logActivity!=='undefined')logActivity('add','\u062a\u0645\u062a \u0625\u0636\u0627\u0641\u0629 '+nm+' \u0627\u0628\u0646 '+fatherRef.name);
     msg.style.color='#4ade80';msg.textContent='\u2713 \u062a\u0645\u062a \u0625\u0636\u0627\u0641\u0629 '+nm;
     document.getElementById('add-new-name').value='';
@@ -1111,15 +1131,15 @@ function confirmDelete(){
   var msg=document.getElementById('del-msg');
   if(!selDel){msg.style.color='#f08080';msg.textContent='\u26a0 \u0627\u062e\u062a\u0631 \u0634\u062e\u0635\u0627\u064b';return;}
   var nm=selDel.name;
-  refreshTreeThen(function(){
-    removeN(nm,TREE);
-    // Rebuild full tree so click listeners stay intact
-    var treeEl=document.getElementById('tree');
-    var oldEl=treeEl.querySelector('.nw');if(oldEl)treeEl.removeChild(oldEl);
-    treeEl.appendChild(build(TREE,0));
+  var path=selDel.path;
+  transactTree(function(working){
+    var removed = path ? removeNodeByPath(path, working) : false;
+    if(!removed) removeN(nm,working);
+  }, function(ok){
+    if(!ok) return;
     ALL_ENTRIES=getAllEntries(TREE,[],[]);
+    rebuildTreeDOM();
     updateDeceasedInTree();
-    if(typeof saveToFirebase!=='undefined')saveToFirebase();
     if(typeof logActivity!=='undefined')logActivity('delete','\u062a\u0645 \u062d\u0630\u0641 '+nm);
     msg.style.color='#4ade80';msg.textContent='\u2713 \u062a\u0645 \u062d\u0630\u0641 '+nm;
     selDel=null;
@@ -2139,9 +2159,10 @@ function saveDeceasedToFirebase(){
   if(typeof decRef !== 'undefined' && decRef) decRef.set(DECEASED);
 }
 
-function findNodeByPath(path){
+function findNodeByPath(path, root){
+  root = root || TREE;
   if(!path || !path.length) return null;
-  var cur = TREE;
+  var cur = root;
   for(var i=1;i<path.length;i++){
     if(!cur.c) return null;
     var found = null;
@@ -2151,9 +2172,10 @@ function findNodeByPath(path){
   }
   return cur;
 }
-function removeNodeByPath(path){
+function removeNodeByPath(path, root){
+  root = root || TREE;
   if(!path || path.length < 2) return false;
-  var parent = findNodeByPath(path.slice(0, -1));
+  var parent = findNodeByPath(path.slice(0, -1), root);
   if(!parent || !parent.c) return false;
   var targetName = path[path.length-1];
   for(var i=0;i<parent.c.length;i++){
@@ -2430,8 +2452,9 @@ function ppSaveEdit(){
     var el = document.getElementById('pp-e-hf-'+key);
     if(el && el.checked) newHf[key] = true;
   });
-  refreshTreeThen(function(){
-    var node = ppFindNode(targetName);
+  transactTree(function(working){
+    var node = ppCurrentPath ? findNodeByPath(ppCurrentPath, working) : null;
+    if(!node) node = findN(targetName, working);
     if(!node) return;
     var oldName = node.n;
     if(newName) node.n = newName;
@@ -2446,12 +2469,16 @@ function ppSaveEdit(){
     if(newName && newName !== oldName && DECEASED[oldName]){ delete DECEASED[oldName]; }
     if(dec) DECEASED[node.n] = true; else delete DECEASED[node.n];
     if(Object.keys(newHf).length) node.hf = newHf; else delete node.hf;
+    if(newName && newName !== oldName && ppCurrentPath){
+      ppCurrentPath = ppCurrentPath.slice(0, -1).concat([node.n]);
+    }
     ppCurrentName = node.n;
+  }, function(ok){
+    if(!ok) return;
     rebuildTreeDOM();
     updateDeceasedInTree();
-    saveToFirebase();
     saveDeceasedToFirebase();
-    if(typeof logActivity !== 'undefined') logActivity('edit','\u062a\u0645 \u062a\u0639\u062f\u064a\u0644 \u0628\u064a\u0627\u0646\u0627\u062a '+node.n);
+    if(typeof logActivity !== 'undefined') logActivity('edit','\u062a\u0645 \u062a\u0639\u062f\u064a\u0644 \u0628\u064a\u0627\u0646\u0627\u062a '+ppCurrentName);
     document.getElementById('pp-editform').style.display='none';
     renderPersonPage();
     var msg = document.getElementById('pp-msg'); msg.style.color='#4ade80'; msg.textContent='\u2713 \u062a\u0645 \u0627\u0644\u062d\u0641\u0638';
@@ -2476,12 +2503,13 @@ function ppDelete(){
   var path = ppCurrentPath;
   if(!name) return;
   if(!confirm('\u0647\u0644 \u0623\u0646\u062a \u0645\u062a\u0623\u0643\u062f \u0645\u0646 \u062d\u0630\u0641 '+name+'\u061f')) return;
-  refreshTreeThen(function(){
-    var removed = path ? removeNodeByPath(path) : false;
-    if(!removed) removeN(name, TREE);
+  transactTree(function(working){
+    var removed = path ? removeNodeByPath(path, working) : false;
+    if(!removed) removeN(name, working);
+  }, function(ok){
+    if(!ok) return;
     rebuildTreeDOM();
     updateDeceasedInTree();
-    saveToFirebase();
     if(typeof logActivity !== 'undefined') logActivity('delete','\u062a\u0645 \u062d\u0630\u0641 '+name+' \u0645\u0646 \u0635\u0641\u062d\u0629 \u0627\u0644\u062a\u0641\u0627\u0635\u064a\u0644');
     closePersonPage();
   });
