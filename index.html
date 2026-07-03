@@ -38,24 +38,25 @@ body{font-family:'Scheherazade New',serif;background:#F4EFE6;color:#3B2F22;min-h
 .h-chain span{font-size:12px;color:#C5A880}
 .h-chain .s{color:#8a9a90;margin:0 6px;font-size:8px}
 .h-chain b{color:#FAF8F5;font-size:13px;font-weight:700}
-.h-ribbon-wrap{position:relative;margin:34px auto 0;max-width:900px}
-.h-ribbon{background:linear-gradient(180deg,#E8D2A0,#C5A880);border-radius:14px;padding:14px 26px 14px 130px;display:flex;align-items:center;justify-content:space-between;gap:14px;box-shadow:0 6px 20px rgba(0,0,0,0.25);position:relative;z-index:1;flex-wrap:nowrap;border:1px solid rgba(255,255,255,0.35)}
+.h-ribbon-wrap{position:relative;margin:34px 54px 0;max-width:900px}
+.h-ribbon{background:linear-gradient(180deg,#E8D2A0,#C5A880);border-radius:14px;padding:14px 130px 14px 26px;display:flex;align-items:center;justify-content:space-between;gap:14px;box-shadow:0 6px 20px rgba(0,0,0,0.25);position:relative;z-index:1;flex-wrap:nowrap;border:1px solid rgba(255,255,255,0.35)}
 .h-orn{color:rgba(44,59,48,0.35);font-size:16px;flex-shrink:0}
 .h-ribbon-name{color:#2C3B30;font-weight:800;font-size:16px;font-family:'Scheherazade New',serif;white-space:nowrap;flex-shrink:0}
-.h-ribbon-links{display:flex;gap:20px;overflow-x:auto;flex:1;justify-content:center;scrollbar-width:none;min-width:0}
+.h-ribbon-links{display:flex;flex-wrap:wrap;gap:10px 20px;flex:1;justify-content:center;min-width:0;row-gap:6px}
 .h-ribbon-links::-webkit-scrollbar{display:none}
 .h-ribbon-links a{color:#2C3B30;font-size:13px;font-weight:700;font-family:'Scheherazade New',serif;white-space:nowrap;cursor:pointer;padding:4px 2px;transition:color .15s}
 .h-ribbon-links a:hover{color:#3B4D40;text-decoration:underline}
-.h-badge{position:absolute;top:-22px;right:14px;z-index:2;background:linear-gradient(180deg,#F0E6D2,#DCC290);border:1px solid rgba(255,255,255,0.5);border-radius:16px 16px 8px 8px;padding:8px 16px 6px;box-shadow:0 4px 12px rgba(0,0,0,0.2);display:flex;flex-direction:column;align-items:center;gap:2px}
-.h-badge-txt{color:#2C3B30;font-size:11px;font-weight:800;font-family:'Scheherazade New',serif;white-space:nowrap}
+.h-badge{position:absolute;top:-20px;right:10px;z-index:2;min-width:110px;height:44px;padding:0 18px;border-radius:22px;background-image:linear-gradient(rgba(20,30,25,0.4),rgba(20,30,25,0.6)),url('tree-logo.png');background-size:cover;background-position:center;border:2px solid #F0E6D2;box-shadow:0 3px 12px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center}
+.h-badge-txt{color:#FAF8F5;font-size:9px;font-weight:800;font-family:'Scheherazade New',serif;text-align:center;text-shadow:0 1px 3px rgba(0,0,0,0.7);line-height:1.2}
 @media (max-width:640px){
-  .h-ribbon{padding:12px 16px 12px 90px;gap:8px}
-  .h-ribbon-links{gap:12px;justify-content:flex-start}
-  .h-ribbon-name{font-size:13px}
+  .h-ribbon-wrap{margin:30px 50px 0}
+  .h-ribbon{padding:12px 92px 12px 14px;gap:6px}
+  .h-ribbon-links{gap:6px 10px;justify-content:flex-start}
+  .h-ribbon-links a{font-size:11.5px}
+  .h-ribbon-name{font-size:12px}
   .h-orn{display:none}
-  .h-badge{right:8px;top:-18px;padding:6px 10px 4px}
-  .h-badge svg{width:26px;height:26px}
-  .h-badge-txt{font-size:9px}
+  .h-badge{right:6px;top:-16px;min-width:80px;height:34px;padding:0 12px;border-radius:17px}
+  .h-badge-txt{font-size:7.5px}
 }
 /* Stars */
 .h-star{position:absolute;border-radius:50%;background:#C5A880;animation:twinkle var(--d,3s) var(--delay,0s) ease-in-out infinite;opacity:0}
@@ -239,7 +240,11 @@ footer{background:#FBF8F2;border-top:1px solid #E3D6BC;padding:36px 20px;text-al
 #log-modal{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:951;width:92%;max-width:480px;max-height:80vh;background:#F4EFE6;border-radius:20px;border:1px solid #E3D6BC;overflow:hidden;flex-direction:column}
 
 #welcome-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:5000;backdrop-filter:blur(10px)}
-#welcome-modal{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:5001;width:90%;max-width:380px;background:#FBF8F2;border-radius:20px;border:1px solid #E3D6BC;padding:28px 24px;box-sizing:border-box;flex-direction:column;align-items:center;text-align:center}
+#welcome-modal{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:5001;width:90%;max-width:380px;background:#FBF8F2;border-radius:22px;border:2px solid #C5A880;padding:0;box-sizing:border-box;flex-direction:column;align-items:center;text-align:center;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.5)}
+.wm-head{width:100%;background:linear-gradient(160deg,#3B4D40 0%,#2C3B30 55%,#1a2620 100%);padding:28px 20px 22px;position:relative}
+.wm-head::before{content:'';position:absolute;inset:0;opacity:0.1;background-image:radial-gradient(circle,#C5A880 1.5px,transparent 1.5px);background-size:20px 20px}
+.wm-icon{width:64px;height:64px;border-radius:50%;background:linear-gradient(180deg,#E8D2A0,#C5A880);border:3px solid #F0E6D2;box-shadow:0 6px 18px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 12px;position:relative;z-index:1}
+.wm-title{color:#FAF8F5;font-size:20px;font-weight:800;font-family:'Scheherazade New',serif;position:relative;z-index:1;text-shadow:0 2px 6px rgba(0,0,0,0.3)}
 
 .dec-label{display:block;font-size:8px;color:#C5A880;opacity:0.9;margin-top:3px;font-family:'Scheherazade New',serif;font-style:italic;letter-spacing:0.5px}
 
@@ -398,7 +403,6 @@ function saveUsersToFirebase(){
   <div class="h-bism">بِسْمِ اللهِ الرَّحْمَنِ الرَّحِيم</div>
   <div class="h-divider"></div>
   <div class="h-title">شجرة ذوي وقيت</div>
-  <div class="h-sub">توثيق ١٤٤٢ هـ</div>
   <div class="h-divider2"></div>
   <div class="h-chain">
     <span>مطير</span><span class="s">◆</span>
@@ -422,7 +426,6 @@ function saveUsersToFirebase(){
     </div>
   </div>
   <div class="h-badge">
-    <img src="tree-logo.png" alt="شجرة ذوي وقيت" width="40" height="40" style="border-radius:50%">
     <span class="h-badge-txt">شجرة ذوي وقيت</span>
   </div>
   </div>
@@ -687,7 +690,18 @@ function saveUsersToFirebase(){
       <div style="margin-top:12px">
         <div style="font-size:12px;color:#C5A880;font-family:'Scheherazade New',serif;margin-bottom:6px">نص الرسالة الترحيبية</div>
         <textarea id="welcome-edit" rows="4" style="width:100%;padding:10px;background:#F5EFE0;border:1px solid #C9A876;border-radius:10px;color:#3B2F22;font-family:'Scheherazade New',serif;font-size:13px;resize:none;direction:rtl;text-align:right;box-sizing:border-box;outline:none;margin-bottom:8px"></textarea>
-        <button onclick="saveWelcomeText()" class="login-btn" style="background:#4A3B32">حفظ الرسالة</button>
+
+        <div style="font-size:12px;color:#C5A880;font-family:'Scheherazade New',serif;margin:10px 0 6px">صورة/أيقونة الشاشة الترحيبية</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <div id="welcome-img-preview" style="width:44px;height:44px;border-radius:50%;background:#F0E6D2;border:2px solid #C5A880;display:flex;align-items:center;justify-content:center;font-size:20px;overflow:hidden;flex-shrink:0">🌳</div>
+          <input type="file" id="welcome-img-file" accept="image/*" style="font-size:11px;color:#8A7A63;flex:1">
+        </div>
+        <button onclick="removeWelcomeImg()" style="background:none;border:none;color:#B23A3A;font-size:11px;cursor:pointer;font-family:'Scheherazade New',serif;margin-bottom:10px">إزالة الصورة (رجوع للأيقونة الافتراضية)</button>
+
+        <div style="font-size:12px;color:#C5A880;font-family:'Scheherazade New',serif;margin:10px 0 6px">لون رأس الشاشة الترحيبية</div>
+        <input type="color" id="welcome-color" value="#2C3B30" style="width:100%;height:38px;border-radius:10px;border:1px solid #C9A876;cursor:pointer;margin-bottom:10px">
+
+        <button onclick="saveWelcomeText()" class="login-btn" style="background:#4A3B32">حفظ كل التعديلات</button>
         <button onclick="previewWelcome()" class="login-btn" style="background:#2A3A4A;margin-top:6px">👁 معاينة الرسالة الآن</button>
         <div id="welcome-edit-msg" style="color:#16A34A;font-size:11px;text-align:center;margin-top:6px;font-family:'Scheherazade New',serif"></div>
       </div>
@@ -755,9 +769,14 @@ function saveUsersToFirebase(){
 </div>
 <div id="welcome-overlay" onclick="closeWelcome()"></div>
 <div id="welcome-modal">
-  <div style="font-size:28px;margin-bottom:10px">🌳</div>
-  <div id="welcome-text" style="font-size:13px;color:#8A7A63;font-family:'Scheherazade New',serif;line-height:1.8;margin-bottom:20px;white-space:pre-line"></div>
-  <button onclick="closeWelcome()" style="padding:12px 32px;border:none;border-radius:12px;background:#3B4D40;color:#FAF8F5;font-family:'Scheherazade New',serif;font-size:15px;cursor:pointer">استمر</button>
+  <div class="wm-head" id="wm-head">
+    <div class="wm-icon" id="wm-icon">🌳</div>
+    <div class="wm-title">أهلاً بك</div>
+  </div>
+  <div style="padding:24px 24px 28px">
+    <div id="welcome-text" style="font-size:13.5px;color:#4A3B2E;font-family:'Scheherazade New',serif;line-height:1.9;margin-bottom:22px;white-space:pre-line"></div>
+    <button onclick="closeWelcome()" style="padding:13px 40px;border:none;border-radius:14px;background:linear-gradient(180deg,#4a6050,#3B4D40);color:#FAF8F5;font-family:'Scheherazade New',serif;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(59,77,64,0.4)">استمر ✦</button>
+  </div>
 </div>
 <div id="install-overlay" onclick="closeInstallModal()"></div>
 <div id="install-modal">
@@ -785,6 +804,7 @@ function saveUsersToFirebase(){
     </div>
   </div>
   <div class="footer-divider"></div>
+  <div class="footer-copy">توثيق ١٤٤٢ هـ</div>
   <div class="footer-copy">جميع الحقوق محفوظة © 2026</div>
 </footer>
 
@@ -1453,6 +1473,7 @@ function openMgmt(){
   renderMgmtUsers();
   populateCpUsers();
   var we=document.getElementById('welcome-edit'); if(we) we.value=WELCOME_TEXT;
+  if(typeof applyWelcomeAppearance==='function') applyWelcomeAppearance();
   renderFieldVisToggles();
   var pe=document.getElementById('public-edit-toggle'); if(pe) pe.checked=PUBLIC_EDIT;
   var mas = document.getElementById('main-admin-only-section');
@@ -1925,15 +1946,67 @@ function renderActivityLog(){
 // ===== WELCOME MESSAGE (admin-editable) =====
 var welcomeRef = null;
 var WELCOME_TEXT = '\u0645\u0631\u062d\u0628\u0627\u064b \u0628\u0643 \u0641\u064a \u0634\u062c\u0631\u0629 \u0630\u0648\u064a \u0648\u0642\u064a\u062a';
+var WELCOME_IMG = null;
+var WELCOME_COLOR = '#2C3B30';
 
+function applyWelcomeAppearance(){
+  var iconEl = document.getElementById('wm-icon');
+  if(WELCOME_IMG){ iconEl.innerHTML=''; var im=document.createElement('img'); im.src=WELCOME_IMG; im.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:50%'; iconEl.appendChild(im); }
+  else { iconEl.innerHTML='\ud83c\udf33'; }
+  var headEl = document.getElementById('wm-head');
+  headEl.style.background = 'linear-gradient(160deg,'+WELCOME_COLOR+' 0%,#1a2620 100%)';
+  var preview = document.getElementById('welcome-img-preview');
+  if(preview){
+    if(WELCOME_IMG){ preview.innerHTML=''; var pim=document.createElement('img'); pim.src=WELCOME_IMG; pim.style.cssText='width:100%;height:100%;object-fit:cover'; preview.appendChild(pim); }
+    else { preview.innerHTML='\ud83c\udf33'; }
+  }
+  var colorInput = document.getElementById('welcome-color');
+  if(colorInput) colorInput.value = WELCOME_COLOR;
+}
+function removeWelcomeImg(){
+  var fi = document.getElementById('welcome-img-file');
+  if(fi){ fi.value=''; delete fi.dataset.value; }
+  WELCOME_IMG = null;
+  var preview = document.getElementById('welcome-img-preview');
+  if(preview) preview.innerHTML='\ud83c\udf33';
+}
+(function(){
+  var fi = document.getElementById('welcome-img-file');
+  if(fi){
+    fi.addEventListener('change', function(){
+      var file = fi.files[0];
+      if(!file) return;
+      var reader = new FileReader();
+      reader.onload = function(ev){
+        var img = new Image();
+        img.onload = function(){
+          var maxSize = 200;
+          var w = img.width, h = img.height;
+          if(w > h){ if(w > maxSize){ h = Math.round(h*maxSize/w); w = maxSize; } }
+          else { if(h > maxSize){ w = Math.round(w*maxSize/h); h = maxSize; } }
+          var canvas = document.createElement('canvas'); canvas.width=w; canvas.height=h;
+          canvas.getContext('2d').drawImage(img,0,0,w,h);
+          var dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+          fi.dataset.value = dataUrl;
+          var preview = document.getElementById('welcome-img-preview');
+          preview.innerHTML=''; var pv=document.createElement('img'); pv.style.cssText='width:100%;height:100%;object-fit:cover'; pv.src=dataUrl; preview.appendChild(pv);
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+})();
 function previewWelcome(){
   var txt = document.getElementById('welcome-edit').value.trim() || WELCOME_TEXT;
   document.getElementById('welcome-text').textContent = txt;
+  applyWelcomeAppearance();
   document.getElementById('welcome-overlay').style.display='block';
   document.getElementById('welcome-modal').style.display='flex';
 }
 function checkFirstVisit(){
   document.getElementById('welcome-text').textContent = WELCOME_TEXT;
+  applyWelcomeAppearance();
   document.getElementById('welcome-overlay').style.display='block';
   document.getElementById('welcome-modal').style.display='flex';
 }
@@ -1946,11 +2019,37 @@ function saveWelcomeText(){
   var txt = document.getElementById('welcome-edit').value.trim();
   var msg = document.getElementById('welcome-edit-msg');
   if(!txt){ msg.style.color='#B23A3A'; msg.textContent='\u0627\u0643\u062a\u0628 \u0646\u0635\u0627\u064b'; return; }
+  if(!confirm('\u062a\u0623\u0643\u064a\u062f: \u0647\u0644 \u062a\u0628\u064a \u062a\u062d\u0641\u0638 \u0627\u0644\u062a\u0639\u062f\u064a\u0644\u0627\u062a \u0639\u0644\u0649 \u0627\u0644\u0634\u0627\u0634\u0629 \u0627\u0644\u062a\u0631\u062d\u064a\u0628\u064a\u0629\u061f \u0647\u0630\u0627 \u0631\u0627\u062d \u064a\u063a\u064a\u0651\u0631\u0647\u0627 \u0644\u0643\u0644 \u0632\u0648\u0627\u0631 \u0627\u0644\u0645\u0648\u0642\u0639.')) return;
+  var fi = document.getElementById('welcome-img-file');
+  var colorInput = document.getElementById('welcome-color');
   WELCOME_TEXT = txt;
-  if(typeof welcomeRef !== 'undefined' && welcomeRef) welcomeRef.set(WELCOME_TEXT);
-  msg.style.color='#16A34A';
-  msg.textContent='\u2713 \u062a\u0645 \u0627\u0644\u062d\u0641\u0638';
-  setTimeout(function(){msg.textContent='';},2000);
+  if(fi && fi.dataset.value) WELCOME_IMG = fi.dataset.value;
+  if(colorInput) WELCOME_COLOR = colorInput.value;
+  var payload = {text: WELCOME_TEXT, img: WELCOME_IMG, color: WELCOME_COLOR};
+  msg.style.color='#8A7A63'; msg.textContent='\u23f3 \u062c\u0627\u0631\u064d \u0627\u0644\u062d\u0641\u0638...';
+  if(typeof welcomeRef !== 'undefined' && welcomeRef){
+    showSavingIndicator();
+    pendingSaveCount++;
+    welcomeRef.transaction(function(){ return payload; }, function(error, committed, snapshot){
+      pendingSaveCount--;
+      if(error || !committed){
+        hideSavingIndicator(false);
+        msg.style.color='#B23A3A'; msg.textContent='\u26a0 \u0641\u0634\u0644 \u0627\u0644\u062d\u0641\u0638\u060c \u062d\u0627\u0648\u0644 \u0645\u0631\u0629 \u062b\u0627\u0646\u064a\u0629';
+        return;
+      }
+      var d = snapshot ? snapshot.val() : null;
+      if(d && typeof d === 'object'){
+        if(d.text) WELCOME_TEXT = d.text;
+        WELCOME_IMG = d.img || null;
+        WELCOME_COLOR = d.color || '#2C3B30';
+      }
+      hideSavingIndicator(true);
+      msg.style.color='#16A34A'; msg.textContent='\u2713 \u062a\u0645 \u0627\u0644\u062d\u0641\u0638 \u0648\u062a\u0623\u0643\u062f \u0648\u0635\u0648\u0644\u0647 \u0644\u0642\u0627\u0639\u062f\u0629 \u0627\u0644\u0628\u064a\u0627\u0646\u0627\u062a';
+      setTimeout(function(){msg.textContent='';},3000);
+      applyWelcomeAppearance();
+    }, false);
+  }
+  applyWelcomeAppearance();
 }
 
 // ===== FIELD VISIBILITY (admin-controlled) =====
@@ -2703,7 +2802,18 @@ if(window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
     publicEditRef = db.ref('waqit_publicedit');
     publicEditRef.on('value', function(snap){ var d=snap.val(); PUBLIC_EDIT = !!d; var t=document.getElementById('public-edit-toggle'); if(t) t.checked=PUBLIC_EDIT; updateAuthUI(); if(ppCurrentName) renderPersonPage(); });
     activityLogRef.once('value', function(snap){ var d=snap.val(); if(d && Array.isArray(d)) ACTIVITY_LOG = d; });
-    welcomeRef.on('value', function(snap){ var d=snap.val(); if(d && typeof d==='string') { WELCOME_TEXT = d; var we=document.getElementById('welcome-edit'); if(we && !we.value) we.value = WELCOME_TEXT; } });
+    welcomeRef.on('value', function(snap){
+      var d=snap.val();
+      if(d && typeof d==='string'){
+        WELCOME_TEXT = d;
+      } else if(d && typeof d==='object'){
+        if(d.text) WELCOME_TEXT = d.text;
+        WELCOME_IMG = d.img || null;
+        WELCOME_COLOR = d.color || '#2C3B30';
+      }
+      var we=document.getElementById('welcome-edit'); if(we && !we.value) we.value = WELCOME_TEXT;
+      if(typeof applyWelcomeAppearance==='function') applyWelcomeAppearance();
+    });
     decRef.on('value', function(snap){ var d=snap.val(); if(d && typeof d==='object') { DECEASED = d; updateDeceasedInTree(); } });
     fieldVisRef.on('value', function(snap){ var d=snap.val(); if(d && typeof d==='object'){ FIELD_VIS = d; renderFieldVisToggles(); if(ppCurrentName) renderPersonPage(); } applyGlobalToggles(); });
 
