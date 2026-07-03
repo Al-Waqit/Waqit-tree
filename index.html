@@ -968,11 +968,6 @@ function makeCard(d, lv, isSpouseCard, fatherName, path){
   var nm = document.createElement('span'); nm.className='np-name';
   nm.textContent = d.n;
   p.appendChild(nm);
-  if(fatherName){
-    var sub = document.createElement('span'); sub.className='np-sub';
-    sub.textContent = '\u0628\u0646 ' + fatherName;
-    p.appendChild(sub);
-  }
   if(d.by || d.dy){
     var dt = document.createElement('span'); dt.className='np-dates';
     dt.textContent = (d.by||'') + ' \u2013 ' + (d.dy||'');
@@ -2861,7 +2856,7 @@ if(window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
   if(ibtn) ibtn.style.display = 'none';
 }
 
-(function(){
+function initFirebaseApp(){
   try{
     firebase.initializeApp({databaseURL:'https://wqit-tree-68f81-default-rtdb.firebaseio.com'});
     db = firebase.database();
@@ -2941,6 +2936,11 @@ if(window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
     });
 
   }catch(e){ console.log('Firebase error:', e); }
-})();</script>
+}
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', initFirebaseApp);
+} else {
+  initFirebaseApp();
+}</script>
 </body>
 </html>
