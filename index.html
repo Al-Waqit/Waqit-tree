@@ -2563,7 +2563,7 @@ window.addEventListener('load', function(){
     activityLogRef.once('value', function(snap){ var d=snap.val(); if(d && Array.isArray(d)) ACTIVITY_LOG = d; });
     welcomeRef.on('value', function(snap){ var d=snap.val(); if(d && typeof d==='string') { WELCOME_TEXT = d; var we=document.getElementById('welcome-edit'); if(we && !we.value) we.value = WELCOME_TEXT; } });
     decRef.on('value', function(snap){ var d=snap.val(); if(d && typeof d==='object') { DECEASED = d; updateDeceasedInTree(); } });
-    fieldVisRef.on('value', function(snap){ var d=snap.val(); if(d && typeof d==='object'){ FIELD_VIS = d; renderFieldVisToggles(); if(ppCurrentName) renderPersonPage(); } else { fieldVisRef.set(FIELD_VIS); } applyGlobalToggles(); });
+    fieldVisRef.on('value', function(snap){ var d=snap.val(); if(d && typeof d==='object'){ FIELD_VIS = d; renderFieldVisToggles(); if(ppCurrentName) renderPersonPage(); } applyGlobalToggles(); });
 
     // Load tree once on start
     treeRef.once('value', function(snap){
