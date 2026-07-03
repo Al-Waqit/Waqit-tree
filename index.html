@@ -267,9 +267,45 @@ function rebuildTreeDOM(){
   treeEl.appendChild(build(TREE, 0));
 }
 
-function saveToFirebase(){
-  if(typeof treeRef !== 'undefined' && treeRef) treeRef.set(TREE);
+function showSavingIndicator(){
+  var el = document.getElementById('saving-indicator');
+  if(!el){
+    el = document.createElement('div');
+    el.id = 'saving-indicator';
+    el.style.cssText = 'position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:5000;background:#3B4D40;color:#FAF8F5;padding:8px 18px;border-radius:20px;font-family:\'Scheherazade New\',serif;font-size:13px;box-shadow:0 2px 10px rgba(0,0,0,0.3);display:none';
+    el.textContent = '\u23f3 \u062c\u0627\u0631\u064d \u0627\u0644\u062d\u0641\u0638... \u0644\u0627 \u062a\u062d\u062f\u0651\u062b \u0627\u0644\u0635\u0641\u062d\u0629';
+    document.body.appendChild(el);
+  }
+  el.style.display = 'block';
 }
+function hideSavingIndicator(ok){
+  var el = document.getElementById('saving-indicator');
+  if(!el) return;
+  if(ok===false){
+    el.textContent = '\u26a0 \u0641\u0634\u0644 \u0627\u0644\u062d\u0641\u0638\u060c \u062d\u0627\u0648\u0644 \u0645\u0631\u0629 \u062b\u0627\u0646\u064a\u0629';
+    el.style.background = '#8b2020';
+    setTimeout(function(){ el.style.display='none'; el.style.background='#3B4D40'; }, 2500);
+  } else {
+    el.textContent = '\u2713 \u062a\u0645 \u0627\u0644\u062d\u0641\u0638';
+    setTimeout(function(){ el.style.display='none'; el.textContent='\u23f3 \u062c\u0627\u0631\u064d \u0627\u0644\u062d\u0641\u0638... \u0644\u0627 \u062a\u062d\u062f\u0651\u062b \u0627\u0644\u0635\u0641\u062d\u0629'; }, 900);
+  }
+}
+var pendingSaveCount = 0;
+function saveToFirebase(){
+  if(typeof treeRef !== 'undefined' && treeRef){
+    showSavingIndicator();
+    pendingSaveCount++;
+    return treeRef.set(TREE).then(function(){ pendingSaveCount--; hideSavingIndicator(true); }).catch(function(e){ pendingSaveCount--; console.log('Save failed:', e); hideSavingIndicator(false); });
+  }
+  return Promise.resolve();
+}
+window.addEventListener('beforeunload', function(e){
+  if(pendingSaveCount > 0){
+    e.preventDefault();
+    e.returnValue = '';
+    return '';
+  }
+});
 function refreshTreeThen(fn){
   if(typeof treeRef === 'undefined' || !treeRef){ fn(); return; }
   treeRef.once('value', function(snap){
@@ -653,8 +689,8 @@ function saveUsersToFirebase(){
     </div>
     <div style="color:#3D3D3D;font-size:20px">•</div>
     <div>
-      <div class="footer-role">صنع بحب من</div>
-      <div class="footer-name">ياسر سالم الرحيمي</div>
+      <div class="footer-role">تنفيذ وتصميم</div>
+      <div class="footer-name">ياسر سالم جودالله الرحيمي</div>
     </div>
   </div>
   <div class="footer-divider"></div>
@@ -794,7 +830,7 @@ function initialsOf(name){
   if(!name) return '؟';
   return name.trim().substring(0,2);
 }
-function makeCard(d, lv, isSpouseCard, fatherName){
+function makeCard(d, lv, isSpouseCard, fatherName, path){
   var hasK = !isSpouseCard && d.c && d.c.length > 0;
   var p = document.createElement('div');
   p.className = 'np' + (hasK ? '' : ' no-ch') + (d.g === 'f' ? ' fem' : '') + (isSpouseCard ? ' np-spouse' : '');
@@ -824,25 +860,26 @@ function makeCard(d, lv, isSpouseCard, fatherName){
   if(!isSpouseCard){
     p.addEventListener('click', function(ev){
       if(ev.target.closest && ev.target.closest('.nb')) return;
-      openPersonPage(d.n);
+      openPersonPage(d.n, path);
     });
   } else {
     p.style.cursor = 'default';
   }
   return p;
 }
-function build(d, lv, fatherName) {
+function build(d, lv, fatherName, path) {
   lv = lv || 0;
+  path = path || [d.n];
   var hasK = d.c && d.c.length > 0;
   var w = document.createElement('div');
   w.className = 'nw lv' + lv;
   var couple = document.createElement('div'); couple.className = 'ncouple';
-  var p = makeCard(d, lv, false, fatherName);
+  var p = makeCard(d, lv, false, fatherName, path);
   couple.appendChild(p);
   if(d.sp){
     var heart = document.createElement('span'); heart.className='heart-badge'; heart.textContent='\u2661';
     couple.appendChild(heart);
-    var spCard = makeCard({n:d.sp, g:(d.g==='f'?'m':'f')}, lv, true, null);
+    var spCard = makeCard({n:d.sp, g:(d.g==='f'?'m':'f')}, lv, true, null, null);
     couple.appendChild(spCard);
   }
   w.appendChild(couple);
@@ -852,7 +889,7 @@ function build(d, lv, fatherName) {
     var row = document.createElement('div'); row.className = 'nrow' + (d.c.length === 1 ? ' solo' : '');
     for (var i = 0; i < d.c.length; i++) {
       var col = document.createElement('div'); col.className = 'ncol';
-      col.appendChild(build(d.c[i], lv + 1, d.n)); row.appendChild(col);
+      col.appendChild(build(d.c[i], lv + 1, d.n, path.concat([d.c[i].n]))); row.appendChild(col);
     }
     kids.appendChild(row); w.appendChild(kids);
     var nbBadge = p.querySelector('.nb');
@@ -1225,6 +1262,18 @@ function applyZoom() {
   treeRoot.style.transform = 'scale(' + currentZoom + ')';
   treeRoot.style.transformOrigin = 'top center';
   treeRoot.style.marginBottom = ((currentZoom - 1) * treeRoot.offsetHeight) + 'px';
+}
+function fitZoomToScreen(){
+  var container = document.querySelector('.tree-area');
+  if(!container || !treeRoot) return;
+  treeRoot.style.transform = 'scale(1)';
+  var naturalWidth = treeRoot.scrollWidth;
+  var containerWidth = container.clientWidth;
+  if(naturalWidth <= 0 || containerWidth <= 0) return;
+  var fitScale = containerWidth / naturalWidth;
+  var target = Math.max(0.2, Math.min(1, fitScale * 0.82));
+  currentZoom = target;
+  applyZoom();
 }
 function zoomIn() { currentZoom = Math.min(currentZoom + 0.15, 4); applyZoom(); }
 function zoomOut() { currentZoom = Math.max(currentZoom - 0.15, 0.2); applyZoom(); }
@@ -2090,18 +2139,54 @@ function saveDeceasedToFirebase(){
   if(typeof decRef !== 'undefined' && decRef) decRef.set(DECEASED);
 }
 
+function findNodeByPath(path){
+  if(!path || !path.length) return null;
+  var cur = TREE;
+  for(var i=1;i<path.length;i++){
+    if(!cur.c) return null;
+    var found = null;
+    for(var j=0;j<cur.c.length;j++){ if(cur.c[j].n === path[i]){ found = cur.c[j]; break; } }
+    if(!found) return null;
+    cur = found;
+  }
+  return cur;
+}
+function removeNodeByPath(path){
+  if(!path || path.length < 2) return false;
+  var parent = findNodeByPath(path.slice(0, -1));
+  if(!parent || !parent.c) return false;
+  var targetName = path[path.length-1];
+  for(var i=0;i<parent.c.length;i++){
+    if(parent.c[i].n === targetName){ parent.c.splice(i,1); return true; }
+  }
+  return false;
+}
+
 // ===== PERSON DETAIL PAGE =====
 var ppCurrentName = null;
-function ppFindNode(name){ return findN(name, TREE); }
+var ppCurrentPath = null;
+function ppFindNode(name){
+  if(ppCurrentPath && (!name || name === ppCurrentName)){
+    var byPath = findNodeByPath(ppCurrentPath);
+    if(byPath) return byPath;
+  }
+  return findN(name, TREE);
+}
 function ppFindEntry(name){
+  if(ppCurrentPath && name === ppCurrentName){
+    for(var i=0;i<ALL_ENTRIES.length;i++){
+      if(ALL_ENTRIES[i].name===name && ALL_ENTRIES[i].path && ALL_ENTRIES[i].path.join('\u0001')===ppCurrentPath.join('\u0001')) return ALL_ENTRIES[i];
+    }
+  }
   for(var i=0;i<ALL_ENTRIES.length;i++){ if(ALL_ENTRIES[i].name===name) return ALL_ENTRIES[i]; }
   return null;
 }
 function ppCanEdit(){
   return getPerms().edit;
 }
-function openPersonPage(name){
-  var node = ppFindNode(name);
+function openPersonPage(name, path){
+  ppCurrentPath = path || null;
+  var node = path ? findNodeByPath(path) : findN(name, TREE);
   if(!node) return;
   ppCurrentName = name;
   document.getElementById('pp-editform').style.display='none';
@@ -2201,7 +2286,8 @@ function renderPersonPage(){
       var chip = document.createElement('div'); chip.className='pp-chip';
       var av = document.createElement('span'); av.className='pp-chip-av'; av.textContent = initialsOf(ch.n); chip.appendChild(av);
       var tx = document.createElement('span'); tx.textContent = ch.n; chip.appendChild(tx);
-      chip.onclick = function(){ openPersonPage(ch.n); };
+      var childPath = ppCurrentPath ? ppCurrentPath.concat([ch.n]) : null;
+      chip.onclick = function(){ openPersonPage(ch.n, childPath); };
       chChips.appendChild(chip);
     });
     chSec.style.display='block';
@@ -2387,10 +2473,12 @@ function ppAddChild(){
 function ppDelete(){
   if(!getPerms().del) return;
   var name = ppCurrentName;
+  var path = ppCurrentPath;
   if(!name) return;
   if(!confirm('\u0647\u0644 \u0623\u0646\u062a \u0645\u062a\u0623\u0643\u062f \u0645\u0646 \u062d\u0630\u0641 '+name+'\u061f')) return;
   refreshTreeThen(function(){
-    removeN(name, TREE);
+    var removed = path ? removeNodeByPath(path) : false;
+    if(!removed) removeN(name, TREE);
     rebuildTreeDOM();
     updateDeceasedInTree();
     saveToFirebase();
@@ -2483,6 +2571,7 @@ window.addEventListener('load', function(){
       if(saved && saved.c && saved.c.length > 0){
         TREE.c = saved.c;
         rebuildTreeDOM();
+        setTimeout(function(){ if(typeof fitZoomToScreen==='function') fitZoomToScreen(); }, 150);
       } else {
         console.log('Firebase empty - uploading tree...');
         treeRef.set(TREE).then(function(){ console.log('Tree uploaded OK!'); }).catch(function(e){ console.log('Upload failed:', e); });
