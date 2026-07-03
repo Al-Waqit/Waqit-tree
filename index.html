@@ -416,7 +416,7 @@ function saveUsersToFirebase(){
     <div class="h-ribbon-links">
       <a onclick="window.scrollTo({top:0,behavior:'smooth'})">الرئيسية</a>
       <a onclick="document.querySelector('.tree-area').scrollIntoView({behavior:'smooth'})">الشجرة التفاعلية</a>
-      <a id="ribbon-nasab-link" onclick="toggleNasab()">النسب إلى آدم</a>
+      <a id="ribbon-nasab-link" onclick="toggleNasab()" style="display:none">النسب إلى آدم</a>
       <a onclick="openSubtreeModal()">شجرة فرعية</a>
       <a onclick="openCompareModal()">مقارنة</a>
     </div>
@@ -509,11 +509,6 @@ function saveUsersToFirebase(){
     </div>
 
     <div class="pp-bio" id="pp-bio" style="display:none"></div>
-
-    <div class="pp-section" id="pp-sp-section" style="display:none">
-      <div class="pp-section-label">الزوج/الزوجة <span>♡</span></div>
-      <div class="pp-chips" id="pp-sp-chips"></div>
-    </div>
 
     <div class="pp-section" id="pp-ch-section" style="display:none">
       <div class="pp-section-label"><span id="pp-ch-count"></span> <span>👪</span></div>
@@ -972,12 +967,6 @@ function build(d, lv, fatherName, path) {
   var couple = document.createElement('div'); couple.className = 'ncouple';
   var p = makeCard(d, lv, false, fatherName, path);
   couple.appendChild(p);
-  if(d.sp){
-    var heart = document.createElement('span'); heart.className='heart-badge'; heart.textContent='\u2661';
-    couple.appendChild(heart);
-    var spCard = makeCard({n:d.sp, g:(d.g==='f'?'m':'f')}, lv, true, null, null);
-    couple.appendChild(spCard);
-  }
   w.appendChild(couple);
   if (hasK) {
     var vl = document.createElement('div'); vl.className = 'vln'; vl.style.display = 'none'; w.appendChild(vl);
@@ -1966,22 +1955,16 @@ function saveWelcomeText(){
 
 // ===== FIELD VISIBILITY (admin-controlled) =====
 var fieldVisRef = null;
-var FIELD_VIS = {bp:true, by:true, dy:true, bio:true, sp:true, nasab:true, photo:true};
+var FIELD_VIS = {bp:true, by:true, dy:true, bio:true, nasab:true, photo:true};
 var FV_LABELS = [
   ['bp','\u0645\u0643\u0627\u0646 \u0627\u0644\u0645\u064a\u0644\u0627\u062f'],
   ['by','\u0633\u0646\u0629 \u0627\u0644\u0645\u064a\u0644\u0627\u062f'],
   ['dy','\u0633\u0646\u0629 \u0627\u0644\u0648\u0641\u0627\u0629'],
-  ['bio','\u0627\u0644\u0646\u0628\u0630\u0629'],
-  ['sp','\u0627\u0644\u0632\u0648\u062c/\u0627\u0644\u0632\u0648\u062c\u0629']
+  ['bio','\u0627\u0644\u0646\u0628\u0630\u0629']
 ];
-var GLOBAL_ONLY_LABELS = [
-  ['nasab','\u0632\u0631 "\u0627\u0644\u0646\u0633\u0628 \u0625\u0644\u0649 \u0622\u062f\u0645"']
-];
+var GLOBAL_ONLY_LABELS = [];
 function applyGlobalToggles(){
-  var nb = document.querySelector('.tb-nasab');
-  if(nb) nb.style.display = FIELD_VIS.nasab === false ? 'none' : '';
-  var rnb = document.getElementById('ribbon-nasab-link');
-  if(rnb) rnb.style.display = FIELD_VIS.nasab === false ? 'none' : '';
+  // "النسب إلى آدم" is permanently hidden by request - no longer controlled by this toggle.
 }
 var publicEditRef = null;
 function togglePublicEdit(){
@@ -2433,23 +2416,6 @@ function renderPersonPage(){
     else { bioEl.textContent = canEdit ? '\u0644\u0627 \u062a\u0648\u062c\u062f \u0646\u0628\u0630\u0629 \u0628\u0639\u062f \u2014 \u0627\u0636\u063a\u0637 \u062a\u0639\u062f\u064a\u0644 \u0644\u0625\u0636\u0627\u0641\u0629 \u0648\u0627\u062d\u062f\u0629' : '\u0644\u0627 \u062a\u0648\u062c\u062f \u0646\u0628\u0630\u0629'; bioEl.style.color = '#8A7A63'; }
   }
 
-  var spSec = document.getElementById('pp-sp-section'), spChips = document.getElementById('pp-sp-chips');
-  if(!fvOk('sp')){ spSec.style.display='none'; }
-  else {
-    spSec.style.display='block';
-    spChips.innerHTML='';
-    if(node.sp){
-      var schip = document.createElement('div'); schip.className='pp-chip';
-      var sav = document.createElement('span'); sav.className='pp-chip-av'; sav.textContent = initialsOf(node.sp); schip.appendChild(sav);
-      var stx = document.createElement('span'); stx.textContent = node.sp; schip.appendChild(stx);
-      spChips.appendChild(schip);
-    } else {
-      var empty = document.createElement('div'); empty.style.cssText='font-size:13px;color:#8A7A63';
-      empty.textContent = canEdit ? '\u0644\u0645 \u064a\u062a\u0645 \u0627\u0644\u062a\u0633\u062c\u064a\u0644 \u2014 \u0627\u0636\u063a\u0637 \u062a\u0639\u062f\u064a\u0644 \u0644\u0625\u0636\u0627\u0641\u0629' : '\u0644\u0645 \u064a\u062a\u0645 \u0627\u0644\u062a\u0633\u062c\u064a\u0644';
-      spChips.appendChild(empty);
-    }
-  }
-
   var chSec = document.getElementById('pp-ch-section'), chChips = document.getElementById('pp-ch-chips'), chCount = document.getElementById('pp-ch-count');
   if(node.c && node.c.length){
     chCount.textContent = '\u0627\u0644\u0623\u0628\u0646\u0627\u0621 (' + node.c.length + ')';
@@ -2473,7 +2439,7 @@ function renderPersonPage(){
   document.getElementById('pp-btn-del').style.display = perms.del ? '' : 'none';
   document.getElementById('pp-add-btn').style.display = perms.add ? 'flex' : 'none';
 
-  ['pp-row-bp','pp-row-by','pp-bio','pp-sp-section'].forEach(function(id){
+  ['pp-row-bp','pp-row-by','pp-bio'].forEach(function(id){
     var el = document.getElementById(id);
     if(canEdit){ el.style.cursor='pointer'; el.onclick = function(){ ppToggleEdit(); }; }
     else { el.style.cursor='default'; el.onclick = null; }
@@ -2539,7 +2505,6 @@ function ppToggleEdit(){
   form.appendChild(ppField('\u0645\u0643\u0627\u0646 \u0627\u0644\u0645\u064a\u0644\u0627\u062f','pp-e-bp', node.bp));
   form.appendChild(ppField('\u0633\u0646\u0629 \u0627\u0644\u0645\u064a\u0644\u0627\u062f','pp-e-by', node.by));
   form.appendChild(ppField('\u0633\u0646\u0629 \u0627\u0644\u0648\u0641\u0627\u0629','pp-e-dy', node.dy));
-  form.appendChild(ppField('\u0627\u0644\u0632\u0648\u062c / \u0627\u0644\u0632\u0648\u062c\u0629','pp-e-sp', node.sp));
 
   var genderWrap = document.createElement('div'); genderWrap.className='pp-field';
   var gl = document.createElement('label'); gl.textContent = '\u0627\u0644\u062c\u0646\u0633'; genderWrap.appendChild(gl);
@@ -2591,7 +2556,6 @@ function ppSaveEdit(){
   var bp = document.getElementById('pp-e-bp').value.trim();
   var by = document.getElementById('pp-e-by').value.trim();
   var dy = document.getElementById('pp-e-dy').value.trim();
-  var sp = document.getElementById('pp-e-sp').value.trim();
   var g = document.getElementById('pp-e-g').value;
   var bio = document.getElementById('pp-e-bio').value.trim();
   var dec = document.getElementById('pp-e-dec').checked;
@@ -2611,7 +2575,7 @@ function ppSaveEdit(){
     if(bp) node.bp = bp; else delete node.bp;
     if(by) node.by = by; else delete node.by;
     if(dy) node.dy = dy; else delete node.dy;
-    if(sp) node.sp = sp; else delete node.sp;
+    delete node.sp;
     if(g) node.g = g; else delete node.g;
     if(bio) node.bio = bio; else delete node.bio;
     if(photoInput && photoInput.dataset.value === '__remove__'){ delete node.photo; }
