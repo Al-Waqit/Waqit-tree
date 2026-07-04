@@ -39,7 +39,7 @@ body{font-family:'Scheherazade New',serif;background:#F4EFE6;color:#3B2F22;min-h
 .h-chain .s{color:#8a9a90;margin:0 6px;font-size:8px}
 .h-chain b{color:#FAF8F5;font-size:13px;font-weight:700}
 .h-ribbon-wrap{position:relative;margin:34px 54px 0;max-width:900px}
-.h-ribbon{background:linear-gradient(180deg,#E8D2A0,#C5A880);border-radius:14px;padding:14px 130px 14px 26px;display:flex;align-items:center;justify-content:space-between;gap:14px;box-shadow:0 6px 20px rgba(0,0,0,0.25);position:relative;z-index:1;flex-wrap:nowrap;border:1px solid rgba(255,255,255,0.35)}
+.h-ribbon{background:linear-gradient(180deg,#E8D2A0,#C5A880);border-radius:14px;padding:14px 26px;display:flex;align-items:center;justify-content:space-between;gap:14px;box-shadow:0 6px 20px rgba(0,0,0,0.25);position:relative;z-index:1;flex-wrap:nowrap;border:1px solid rgba(255,255,255,0.35)}
 .h-orn{color:rgba(44,59,48,0.35);font-size:16px;flex-shrink:0}
 .h-ribbon-name{color:#2C3B30;font-weight:800;font-size:16px;font-family:'Scheherazade New',serif;white-space:nowrap;flex-shrink:0}
 .h-ribbon-links{display:flex;flex-wrap:wrap;gap:10px 20px;flex:1;justify-content:center;min-width:0;row-gap:6px}
@@ -50,7 +50,7 @@ body{font-family:'Scheherazade New',serif;background:#F4EFE6;color:#3B2F22;min-h
 .h-badge-txt{color:#FAF8F5;font-size:9px;font-weight:800;font-family:'Scheherazade New',serif;text-align:center;text-shadow:0 1px 3px rgba(0,0,0,0.7);line-height:1.2}
 @media (max-width:640px){
   .h-ribbon-wrap{margin:30px 50px 0}
-  .h-ribbon{padding:12px 92px 12px 14px;gap:6px}
+  .h-ribbon{padding:12px 14px;gap:6px}
   .h-ribbon-links{gap:6px 10px;justify-content:flex-start}
   .h-ribbon-links a{font-size:11.5px}
   .h-ribbon-name{font-size:12px}
@@ -431,13 +431,9 @@ function saveUsersToFirebase(){
       <a onclick="openCompareModal()">مقارنة</a>
     </div>
   </div>
-  <div class="h-badge">
-    <span class="h-badge-txt">شجرة ذوي وقيت</span>
-  </div>
   </div>
 </div>
 <div class="toolbar">
-  <button class="tb-sidebar-btn" onclick="openSidebar()" title="قائمة العائلة">☰</button>
   <div class="tb-btns">
     
     
@@ -717,6 +713,16 @@ function saveUsersToFirebase(){
         <button onclick="previewWelcome()" class="login-btn" style="background:#2A3A4A;margin-top:6px">👁 معاينة الرسالة الآن</button>
         <div id="welcome-edit-msg" style="color:#16A34A;font-size:11px;text-align:center;margin-top:6px;font-family:'Scheherazade New',serif"></div>
       </div>
+    </div>
+    <div style="border-top:1px solid #E3D6BC;padding:12px 16px">
+      <div style="font-size:12px;color:#C5A880;font-family:'Scheherazade New',serif;margin-bottom:8px">🎨 خلفية شريط التنقّل (الشريط الذهبي)</div>
+      <div style="font-size:11px;color:#8A7A63;margin-bottom:6px">لون الخلفية</div>
+      <input type="color" id="ribbon-color" value="#C5A880" style="width:100%;height:38px;border-radius:10px;border:1px solid #C9A876;cursor:pointer;margin-bottom:10px">
+      <div style="font-size:11px;color:#8A7A63;margin-bottom:6px">أو صورة خلفية (اختياري، تطغى على اللون)</div>
+      <input type="file" id="ribbon-img-file" accept="image/*" style="font-size:11px;color:#8A7A63;width:100%;margin-bottom:6px">
+      <button onclick="removeRibbonImg()" style="background:none;border:none;color:#B23A3A;font-size:11px;cursor:pointer;font-family:'Scheherazade New',serif;margin-bottom:10px">إزالة صورة الخلفية</button>
+      <button onclick="saveRibbonStyle()" class="login-btn" style="background:#4A3B32">حفظ خلفية الشريط</button>
+      <div id="ribbon-style-msg" style="color:#16A34A;font-size:11px;text-align:center;margin-top:6px;font-family:'Scheherazade New',serif"></div>
     </div>
     <div style="border-top:1px solid #E3D6BC;padding:12px 16px">
       <div style="font-size:12px;color:#C5A880;font-family:'Scheherazade New',serif;margin-bottom:10px">الحقول الظاهرة في صفحة الفرد</div>
@@ -1090,7 +1096,7 @@ function doSearch() {
     item.style.cssText='padding:10px 16px;cursor:pointer;border-bottom:1px solid #E3D6BC;transition:background .15s';
     var nl=document.createElement('div');nl.style.cssText='font-size:15px;font-weight:600;color:#3B2F22;margin-bottom:2px';nl.textContent=entry.name;item.appendChild(nl);
     var anc=entry.path.slice(1,-1).reverse().slice(0,3);
-    if(anc.length){var pl=document.createElement('div');pl.style.cssText='font-size:11px;color:#8A7A63';pl.textContent='\u0627\u0628\u0646 '+anc.join(' \u2190 ');item.appendChild(pl);}
+    if(anc.length){var pl=document.createElement('div');pl.style.cssText='font-size:11px;color:#8A7A63';pl.textContent='\u0628\u0646 '+anc.join(' \u2190 ');item.appendChild(pl);}
     item.onmouseenter=function(){item.style.background='#F0E6D2';};
     item.onmouseleave=function(){item.style.background='';};
     item.onmousedown=function(){selectEntry(entry);};
@@ -1113,7 +1119,7 @@ function switchTab(t){
   document.getElementById('tab-del').className='mod-tab'+(t==='del'?' active-del':'');
   document.getElementById('tab-dec').className='mod-tab'+(t==='dec'?' active-add':'');
 }
-function mkSug(e){var it=document.createElement('div');it.style.cssText='padding:10px 16px;cursor:pointer;border-bottom:1px solid #E3D6BC';var f=e.path.length>1?e.path[e.path.length-2]:'';var g=e.path.length>2?e.path[e.path.length-3]:'';var nl=document.createElement('div');nl.style.cssText='font-size:14px;font-weight:600;color:#3B2F22';nl.textContent=e.name;it.appendChild(nl);if(f){var pl=document.createElement('div');pl.style.cssText='font-size:11px;color:#8A7A63';pl.textContent='\u0627\u0628\u0646 '+f+(g?' \u2190 '+g:'');it.appendChild(pl);}it.onmouseenter=function(){it.style.background='#F0E6D2';};it.onmouseleave=function(){it.style.background='';};return it;}
+function mkSug(e){var it=document.createElement('div');it.style.cssText='padding:10px 16px;cursor:pointer;border-bottom:1px solid #E3D6BC';var f=e.path.length>1?e.path[e.path.length-2]:'';var g=e.path.length>2?e.path[e.path.length-3]:'';var nl=document.createElement('div');nl.style.cssText='font-size:14px;font-weight:600;color:#3B2F22';nl.textContent=e.name;it.appendChild(nl);if(f){var pl=document.createElement('div');pl.style.cssText='font-size:11px;color:#8A7A63';pl.textContent='\u0628\u0646 '+f+(g?' \u2190 '+g:'');it.appendChild(pl);}it.onmouseenter=function(){it.style.background='#F0E6D2';};it.onmouseleave=function(){it.style.background='';};return it;}
 function searchFather(){
   var v=document.getElementById('add-father-q').value.trim();
   var s=document.getElementById('father-sug');
@@ -1173,7 +1179,7 @@ function searchDel(){
     it.style.cssText='padding:10px 16px;cursor:pointer;border-bottom:1px solid #E3D6BC;transition:background .15s';
     var nl=document.createElement('div');nl.style.cssText='font-size:15px;font-weight:600;color:#3B2F22;margin-bottom:2px';nl.textContent=e.name;it.appendChild(nl);
     var anc=e.path.slice(1,-1).reverse().slice(0,3);
-    if(anc.length){var pl=document.createElement('div');pl.style.cssText='font-size:11px;color:#8A7A63';pl.textContent='\u0627\u0628\u0646 '+anc.join(' \u2190 ');it.appendChild(pl);}
+    if(anc.length){var pl=document.createElement('div');pl.style.cssText='font-size:11px;color:#8A7A63';pl.textContent='\u0628\u0646 '+anc.join(' \u2190 ');it.appendChild(pl);}
     it.onmouseenter=function(){it.style.background='#F0E6D2';};
     it.onmouseleave=function(){it.style.background='';};
     it.onmousedown=function(){
@@ -1215,7 +1221,7 @@ function saveNewPerson(){
     ALL_ENTRIES=getAllEntries(TREE,[],[]);
     rebuildTreeDOM();
     updateDeceasedInTree();
-    if(typeof logActivity!=='undefined')logActivity('add','\u062a\u0645\u062a \u0625\u0636\u0627\u0641\u0629 '+nm+' \u0627\u0628\u0646 '+fatherRef.name);
+    if(typeof logActivity!=='undefined')logActivity('add','\u062a\u0645\u062a \u0625\u0636\u0627\u0641\u0629 '+nm+' \u0628\u0646 '+fatherRef.name);
     msg.style.color='#16A34A';msg.textContent='\u2713 \u062a\u0645\u062a \u0625\u0636\u0627\u0641\u0629 '+nm;
     document.getElementById('add-new-name').value='';
     selFather=null;
@@ -1498,6 +1504,7 @@ function openMgmt(){
   populateCpUsers();
   var we=document.getElementById('welcome-edit'); if(we) we.value=WELCOME_TEXT;
   if(typeof applyWelcomeAppearance==='function') applyWelcomeAppearance();
+  var rc=document.getElementById('ribbon-color'); if(rc) rc.value=RIBBON_COLOR;
   renderFieldVisToggles();
   var pe=document.getElementById('public-edit-toggle'); if(pe) pe.checked=PUBLIC_EDIT;
   var mas = document.getElementById('main-admin-only-section');
@@ -1640,6 +1647,7 @@ window.addEventListener('DOMContentLoaded',function(){
   var addBtn=document.querySelector('.tb-add');
   if(addBtn)addBtn.style.display='none';
   if(typeof applyGlobalToggles==='function') applyGlobalToggles();
+  if(typeof applyRibbonStyle==='function') applyRibbonStyle();
   if(typeof checkFirstVisit!=='undefined')checkFirstVisit();
   if('serviceWorker' in navigator && location.protocol==='https:'){
     navigator.serviceWorker.register('sw.js').catch(function(e){console.log('SW:',e);});
@@ -1687,7 +1695,7 @@ function searchCmp(num){
     var it=document.createElement('div');
     it.style.cssText='padding:10px 16px;cursor:pointer;border-bottom:1px solid #E3D6BC;transition:background .15s';
     var nm=document.createElement('div');nm.style.cssText='font-size:14px;font-weight:600;color:#3B2F22';nm.textContent=e.name;it.appendChild(nm);
-    if(f){var pl=document.createElement('div');pl.style.cssText='font-size:11px;color:#8A7A63';pl.textContent='\u0627\u0628\u0646 '+f+(g?' \u2190 '+g:'');it.appendChild(pl);}
+    if(f){var pl=document.createElement('div');pl.style.cssText='font-size:11px;color:#8A7A63';pl.textContent='\u0628\u0646 '+f+(g?' \u2190 '+g:'');it.appendChild(pl);}
     it.onmouseenter=function(){it.style.background='#F0E6D2';};
     it.onmouseleave=function(){it.style.background='';};
     it.onmousedown=function(){
@@ -1823,7 +1831,7 @@ function searchSubtree(){
     var it=document.createElement('div');
     it.style.cssText='padding:10px 16px;cursor:pointer;border-bottom:1px solid #E3D6BC;transition:background .15s';
     var nm=document.createElement('div');nm.style.cssText='font-size:14px;font-weight:600;color:#3B2F22';nm.textContent=e.name+(childCount?' ('+childCount+' \u0627\u0628\u0646)':'');it.appendChild(nm);
-    if(f){var pl=document.createElement('div');pl.style.cssText='font-size:11px;color:#8A7A63';pl.textContent='\u0627\u0628\u0646 '+f+(g?' \u2190 '+g:'');it.appendChild(pl);}
+    if(f){var pl=document.createElement('div');pl.style.cssText='font-size:11px;color:#8A7A63';pl.textContent='\u0628\u0646 '+f+(g?' \u2190 '+g:'');it.appendChild(pl);}
     it.onmouseenter=function(){it.style.background='#F0E6D2';};
     it.onmouseleave=function(){it.style.background='';};
     it.onmousedown=function(){
@@ -1865,7 +1873,7 @@ function renderSubtreePreview(node, name){
   var btnRow=document.createElement('div');
   btnRow.style.cssText='display:flex;gap:8px;margin-top:12px';
   var exportBtn=document.createElement('button');
-  exportBtn.textContent='\u062a\u0635\u062f\u064a\u0631 \u0643\u0635\u0648\u0631\u0629';
+  exportBtn.textContent='\u0645\u0634\u0627\u0631\u0643\u0629 / \u062d\u0641\u0638 \u0627\u0644\u0635\u0648\u0631\u0629';
   exportBtn.style.cssText='flex:1;padding:11px;border:none;border-radius:10px;background:#3B4D40;color:#FAF8F5;font-family:Scheherazade New,serif;font-size:14px;cursor:pointer';
   exportBtn.onclick=function(){ exportSubtreeImage(name); };
   btnRow.appendChild(exportBtn);
@@ -1879,20 +1887,49 @@ function exportSubtreeImage(name){
   msg.style.cssText='text-align:center;color:#C5A880;font-family:Scheherazade New,serif;padding:8px';
   container.parentNode.insertBefore(msg, container.nextSibling);
 
-  // Use html2canvas if available, otherwise fallback to simple text export
-  if(typeof html2canvas !== 'undefined'){
-    html2canvas(container, {backgroundColor:'#ede4d3', scale:2}).then(function(canvas){
+  function renderAndDeliver(){
+    html2canvas(container, {backgroundColor:'#ede4d3', scale:2, useCORS:true}).then(function(canvas){
+      canvas.toBlob(function(blob){
+        msg.remove();
+        if(!blob){ alert('\u062a\u0639\u0630\u0651\u0631 \u0625\u0646\u0634\u0627\u0621 \u0627\u0644\u0635\u0648\u0631\u0629\u060c \u062d\u0627\u0648\u0644 \u0645\u0631\u0629 \u062b\u0627\u0646\u064a\u0629'); return; }
+        var fileName = '\u0634\u062c\u0631\u0629_'+name+'.png';
+        var file = new File([blob], fileName, {type:'image/png'});
+        if(navigator.canShare && navigator.canShare({files:[file]})){
+          navigator.share({
+            files:[file],
+            title: '\u0634\u062c\u0631\u0629 '+name,
+            text: '\u0634\u062c\u0631\u0629 '+name+' \u0645\u0646 \u0634\u062c\u0631\u0629 \u0630\u0648\u064a \u0648\u0642\u064a\u062a'
+          }).catch(function(err){
+            if(err && err.name !== 'AbortError'){
+              var link=document.createElement('a');
+              link.download=fileName;
+              link.href=URL.createObjectURL(blob);
+              link.click();
+            }
+          });
+        } else {
+          var link=document.createElement('a');
+          link.download=fileName;
+          link.href=URL.createObjectURL(blob);
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+        }
+      }, 'image/png');
+    }).catch(function(err){
       msg.remove();
-      var link=document.createElement('a');
-      link.download='\u0634\u062c\u0631\u0629_'+name+'.png';
-      link.href=canvas.toDataURL('image/png');
-      link.click();
+      alert('\u062a\u0639\u0630\u0651\u0631 \u0625\u0646\u0634\u0627\u0621 \u0627\u0644\u0635\u0648\u0631\u0629: '+(err && err.message ? err.message : '\u062e\u0637\u0623 \u063a\u064a\u0631 \u0645\u0639\u0631\u0648\u0641'));
     });
+  }
+
+  if(typeof html2canvas !== 'undefined'){
+    renderAndDeliver();
   } else {
     msg.textContent='\u062c\u0627\u0631\u064a \u062a\u062d\u0645\u064a\u0644 \u0627\u0644\u0645\u0643\u062a\u0628\u0629...';
     var script=document.createElement('script');
     script.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-    script.onload=function(){ exportSubtreeImage(name); };
+    script.onload=function(){ renderAndDeliver(); };
+    script.onerror=function(){ msg.remove(); alert('\u062a\u0639\u0630\u0651\u0631 \u062a\u062d\u0645\u064a\u0644 \u0645\u0643\u062a\u0628\u0629 \u0627\u0644\u062a\u0635\u062f\u064a\u0631\u060c \u062a\u0623\u0643\u062f \u0645\u0646 \u0627\u062a\u0635\u0627\u0644\u0643 \u0628\u0627\u0644\u0625\u0646\u062a\u0631\u0646\u062a'); };
     document.head.appendChild(script);
   }
 }
@@ -1941,7 +1978,7 @@ function verifyLiveData(){
         report += '\n\u2705 \u0644\u0642\u064a\u0646\u0627 "' + q + '" \u0645\u0648\u062c\u0648\u062f \u0641\u0639\u0644\u0627\u064b (' + matches.length + ' \u0646\u062a\u064a\u062c\u0629):\n';
         matches.slice(0,5).forEach(function(m){
           var father = m.path.length>1 ? m.path[m.path.length-2] : '';
-          report += '\u2022 ' + m.name + (father ? ' (\u0627\u0628\u0646 '+father+')' : '') + '\n';
+          report += '\u2022 ' + m.name + (father ? ' (\u0628\u0646 '+father+')' : '') + '\n';
         });
       } else {
         report += '\n\u274c "' + q + '" \u063a\u064a\u0631 \u0645\u0648\u062c\u0648\u062f \u0641\u064a \u0642\u0627\u0639\u062f\u0629 \u0627\u0644\u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u062d\u0642\u064a\u0642\u064a\u0629 \u0627\u0644\u0622\u0646.';
@@ -2062,6 +2099,83 @@ function removeWelcomeImg(){
     });
   }
 })();
+
+// ===== RIBBON BACKGROUND (admin-editable) =====
+var ribbonRef = null;
+var RIBBON_COLOR = '#C5A880';
+var RIBBON_IMG = null;
+
+function applyRibbonStyle(){
+  var ribbon = document.querySelector('.h-ribbon');
+  if(!ribbon) return;
+  if(RIBBON_IMG){
+    ribbon.style.background = 'linear-gradient(rgba(0,0,0,0.15),rgba(0,0,0,0.15)), url(\'' + RIBBON_IMG + '\')';
+    ribbon.style.backgroundSize = 'cover';
+    ribbon.style.backgroundPosition = 'center';
+  } else {
+    ribbon.style.background = 'linear-gradient(180deg,' + RIBBON_COLOR + 'ee,' + RIBBON_COLOR + ')';
+  }
+  var colorInput = document.getElementById('ribbon-color');
+  if(colorInput) colorInput.value = RIBBON_COLOR;
+}
+function removeRibbonImg(){
+  var fi = document.getElementById('ribbon-img-file');
+  if(fi){ fi.value=''; delete fi.dataset.value; }
+  RIBBON_IMG = null;
+  applyRibbonStyle();
+}
+(function(){
+  var fi = document.getElementById('ribbon-img-file');
+  if(fi){
+    fi.addEventListener('change', function(){
+      var file = fi.files[0];
+      if(!file) return;
+      var reader = new FileReader();
+      reader.onload = function(ev){
+        var img = new Image();
+        img.onload = function(){
+          var maxW = 900;
+          var w = img.width, h = img.height;
+          if(w > maxW){ h = Math.round(h*maxW/w); w = maxW; }
+          var canvas = document.createElement('canvas'); canvas.width=w; canvas.height=h;
+          canvas.getContext('2d').drawImage(img,0,0,w,h);
+          fi.dataset.value = canvas.toDataURL('image/jpeg', 0.8);
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+})();
+function saveRibbonStyle(){
+  if(!isMainAdmin()) return;
+  var msg = document.getElementById('ribbon-style-msg');
+  var colorInput = document.getElementById('ribbon-color');
+  var fi = document.getElementById('ribbon-img-file');
+  if(colorInput) RIBBON_COLOR = colorInput.value;
+  if(fi && fi.dataset.value) RIBBON_IMG = fi.dataset.value;
+  var payload = {color: RIBBON_COLOR, img: RIBBON_IMG};
+  msg.style.color='#8A7A63'; msg.textContent='\u23f3 \u062c\u0627\u0631\u064d \u0627\u0644\u062d\u0641\u0638...';
+  if(typeof ribbonRef !== 'undefined' && ribbonRef){
+    showSavingIndicator();
+    pendingSaveCount++;
+    ribbonRef.transaction(function(){ return payload; }, function(error, committed, snapshot){
+      pendingSaveCount--;
+      if(error || !committed){
+        hideSavingIndicator(false);
+        msg.style.color='#B23A3A'; msg.textContent='\u26a0 \u0641\u0634\u0644 \u0627\u0644\u062d\u0641\u0638\u060c \u062d\u0627\u0648\u0644 \u0645\u0631\u0629 \u062b\u0627\u0646\u064a\u0629';
+        return;
+      }
+      var d = snapshot ? snapshot.val() : null;
+      if(d && typeof d === 'object'){ RIBBON_COLOR = d.color || RIBBON_COLOR; RIBBON_IMG = d.img || null; }
+      hideSavingIndicator(true);
+      msg.style.color='#16A34A'; msg.textContent='\u2713 \u062a\u0645 \u0627\u0644\u062d\u0641\u0638';
+      setTimeout(function(){ msg.textContent=''; }, 2000);
+      applyRibbonStyle();
+    }, false);
+  }
+  applyRibbonStyle();
+}
 function previewWelcome(){
   var txt = document.getElementById('welcome-edit').value.trim() || WELCOME_TEXT;
   document.getElementById('welcome-text').textContent = txt;
@@ -2288,7 +2402,7 @@ function searchDec(){
     it.style.cssText='padding:10px 16px;cursor:pointer;border-bottom:1px solid #E3D6BC;transition:background .15s';
     var nm=document.createElement('div');nm.style.cssText='font-size:15px;font-weight:600;color:#3B2F22;margin-bottom:2px';nm.textContent=e.name;it.appendChild(nm);
     var anc=e.path.slice(1,-1).reverse().slice(0,3);
-    if(anc.length){var pl=document.createElement('div');pl.style.cssText='font-size:11px;color:#8A7A63';pl.textContent='\u0627\u0628\u0646 '+anc.join(' \u2190 ');it.appendChild(pl);}
+    if(anc.length){var pl=document.createElement('div');pl.style.cssText='font-size:11px;color:#8A7A63';pl.textContent='\u0628\u0646 '+anc.join(' \u2190 ');it.appendChild(pl);}
     it.onmouseenter=function(){it.style.background='#F0E6D2';};
     it.onmouseleave=function(){it.style.background='';};
     it.onmousedown=function(){
@@ -2363,7 +2477,7 @@ function searchDec(){
     it.style.cssText='padding:10px 16px;cursor:pointer;border-bottom:1px solid #E3D6BC;transition:background .15s';
     var nl=document.createElement('div');nl.style.cssText='font-size:15px;font-weight:600;color:#3B2F22;margin-bottom:2px';nl.textContent=e.name;it.appendChild(nl);
     var anc=e.path.slice(1,-1).reverse().slice(0,3);
-    if(anc.length){var pl=document.createElement('div');pl.style.cssText='font-size:11px;color:#8A7A63';pl.textContent='\u0627\u0628\u0646 '+anc.join(' \u2190 ');it.appendChild(pl);}
+    if(anc.length){var pl=document.createElement('div');pl.style.cssText='font-size:11px;color:#8A7A63';pl.textContent='\u0628\u0646 '+anc.join(' \u2190 ');it.appendChild(pl);}
     it.onmouseenter=function(){it.style.background='#F0E6D2';};
     it.onmouseleave=function(){it.style.background='';};
     it.onmousedown=function(){
@@ -2505,6 +2619,7 @@ function renderSidebarList(){
   });
 }
 function openPersonPage(name, path){
+  if(!isMainAdmin()) return;
   ppCurrentPath = path || null;
   var node = path ? findNodeByPath(path) : findN(name, TREE);
   if(!node) return;
@@ -2551,7 +2666,7 @@ function renderPersonPage(){
   var ppAv = document.getElementById('pp-avatar');
   if(node.photo){ ppAv.innerHTML=''; var ppImg=document.createElement('img'); ppImg.src=node.photo; ppImg.alt=name; ppAv.appendChild(ppImg); }
   else { ppAv.innerHTML=''; ppAv.textContent = initialsOf(name); }
-  document.getElementById('pp-name').textContent = name + (father ? ' \u0627\u0628\u0646 '+father : '');
+  document.getElementById('pp-name').textContent = name + (father ? ' \u0628\u0646 '+father : '');
 
   var parts=[];
   if(node.by) parts.push(node.by);
@@ -2918,6 +3033,15 @@ function initFirebaseApp(){
     usersRef = db.ref('waqit_users');
     activityLogRef = db.ref('waqit_log');
     welcomeRef = db.ref('waqit_welcome');
+    ribbonRef = db.ref('waqit_ribbon');
+    ribbonRef.on('value', function(snap){
+      var d = snap.val();
+      if(d && typeof d === 'object'){
+        RIBBON_COLOR = d.color || '#C5A880';
+        RIBBON_IMG = d.img || null;
+      }
+      if(typeof applyRibbonStyle === 'function') applyRibbonStyle();
+    });
     decRef = db.ref('waqit_deceased');
     fieldVisRef = db.ref('waqit_fieldvis');
     publicEditRef = db.ref('waqit_publicedit');
