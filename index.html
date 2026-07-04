@@ -706,8 +706,13 @@ function saveUsersToFirebase(){
         </div>
         <button onclick="removeWelcomeImg()" style="background:none;border:none;color:#B23A3A;font-size:11px;cursor:pointer;font-family:'Scheherazade New',serif;margin-bottom:10px">إزالة الصورة (رجوع للأيقونة الافتراضية)</button>
 
-        <div style="font-size:12px;color:#C5A880;font-family:'Scheherazade New',serif;margin:10px 0 6px">لون رأس الشاشة الترحيبية</div>
+        <div style="font-size:12px;color:#C5A880;font-family:'Scheherazade New',serif;margin:10px 0 6px">لون رأس الشاشة الترحيبية (لو ما فيه صورة خلفية)</div>
         <input type="color" id="welcome-color" value="#2C3B30" style="width:100%;height:38px;border-radius:10px;border:1px solid #C9A876;cursor:pointer;margin-bottom:10px">
+
+        <div style="font-size:12px;color:#C5A880;font-family:'Scheherazade New',serif;margin:10px 0 6px">أو صورة خلفية لرأس الشاشة (تطغى على اللون)</div>
+        <input type="file" id="welcome-head-img-file" accept="image/*" style="font-size:11px;color:#8A7A63;width:100%;margin-bottom:6px">
+        <button onclick="removeWelcomeHeadImg()" style="background:none;border:none;color:#B23A3A;font-size:11px;cursor:pointer;font-family:'Scheherazade New',serif;margin-bottom:10px">إزالة صورة الخلفية</button>
+        <div style="font-size:10px;color:#8A7A63;margin-bottom:10px">✨ لون الجزء الأبيض تحت يتغيّر تلقائيًا ليتناسق مع الصورة</div>
 
         <button onclick="saveWelcomeText()" class="login-btn" style="background:#4A3B32">حفظ كل التعديلات</button>
         <button onclick="previewWelcome()" class="login-btn" style="background:#2A3A4A;margin-top:6px">👁 معاينة الرسالة الآن</button>
@@ -789,9 +794,8 @@ function saveUsersToFirebase(){
 <div id="welcome-modal">
   <div class="wm-head" id="wm-head">
     <div class="wm-icon" id="wm-icon">🌳</div>
-    <div class="wm-title">أهلاً بك</div>
   </div>
-  <div style="padding:24px 24px 28px">
+  <div style="padding:24px 24px 28px" id="wm-body">
     <div id="welcome-text" style="font-size:13.5px;color:#4A3B2E;font-family:'Scheherazade New',serif;line-height:1.9;margin-bottom:22px;white-space:pre-line"></div>
     <button onclick="closeWelcome()" style="padding:13px 40px;border:none;border-radius:14px;background:linear-gradient(180deg,#4a6050,#3B4D40);color:#FAF8F5;font-family:'Scheherazade New',serif;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(59,77,64,0.4)">استمر ✦</button>
   </div>
@@ -2049,14 +2053,47 @@ function renderActivityLog(){
 var welcomeRef = null;
 var WELCOME_TEXT = '\u0645\u0631\u062d\u0628\u0627\u064b \u0628\u0643 \u0641\u064a \u0634\u062c\u0631\u0629 \u0630\u0648\u064a \u0648\u0642\u064a\u062a';
 var WELCOME_IMG = null;
+var WELCOME_HEAD_IMG = null;
+var WELCOME_BOTTOM_COLOR = '#FBF8F2';
 var WELCOME_COLOR = '#2C3B30';
 
+function extractDominantColor(dataUrl, callback){
+  var img = new Image();
+  img.onload = function(){
+    var size = 16;
+    var canvas = document.createElement('canvas'); canvas.width=size; canvas.height=size;
+    var ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, size, size);
+    var data;
+    try{ data = ctx.getImageData(0, 0, size, size).data; }catch(e){ callback(null); return; }
+    var r=0,g=0,b=0,n=0;
+    for(var i=0;i<data.length;i+=4){ r+=data[i]; g+=data[i+1]; b+=data[i+2]; n++; }
+    r=Math.round(r/n); g=Math.round(g/n); b=Math.round(b/n);
+    callback({r:r,g:g,b:b});
+  };
+  img.onerror = function(){ callback(null); };
+  img.src = dataUrl;
+}
+function computeBottomTint(rgb){
+  if(!rgb) return '#FBF8F2';
+  // Blend the dominant color with white for a soft, harmonious light tint
+  var r = Math.round(rgb.r*0.22 + 255*0.78);
+  var g = Math.round(rgb.g*0.22 + 255*0.78);
+  var b = Math.round(rgb.b*0.22 + 255*0.78);
+  return 'rgb('+r+','+g+','+b+')';
+}
 function applyWelcomeAppearance(){
   var iconEl = document.getElementById('wm-icon');
   if(WELCOME_IMG){ iconEl.innerHTML=''; var im=document.createElement('img'); im.src=WELCOME_IMG; im.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:50%'; iconEl.appendChild(im); }
   else { iconEl.innerHTML='\ud83c\udf33'; }
   var headEl = document.getElementById('wm-head');
-  headEl.style.background = 'linear-gradient(160deg,'+WELCOME_COLOR+' 0%,#1a2620 100%)';
+  if(WELCOME_HEAD_IMG){
+    headEl.style.background = 'linear-gradient(rgba(0,0,0,0.25),rgba(0,0,0,0.35)), url(\''+WELCOME_HEAD_IMG+'\')';
+    headEl.style.backgroundSize = 'cover';
+    headEl.style.backgroundPosition = 'center';
+  } else {
+    headEl.style.background = 'linear-gradient(160deg,'+WELCOME_COLOR+' 0%,#1a2620 100%)';
+  }
   var preview = document.getElementById('welcome-img-preview');
   if(preview){
     if(WELCOME_IMG){ preview.innerHTML=''; var pim=document.createElement('img'); pim.src=WELCOME_IMG; pim.style.cssText='width:100%;height:100%;object-fit:cover'; preview.appendChild(pim); }
@@ -2064,6 +2101,24 @@ function applyWelcomeAppearance(){
   }
   var colorInput = document.getElementById('welcome-color');
   if(colorInput) colorInput.value = WELCOME_COLOR;
+
+  var bodyEl = document.getElementById('wm-body');
+  var sourceImg = WELCOME_HEAD_IMG || WELCOME_IMG;
+  if(sourceImg){
+    extractDominantColor(sourceImg, function(rgb){
+      WELCOME_BOTTOM_COLOR = computeBottomTint(rgb);
+      if(bodyEl) bodyEl.style.background = WELCOME_BOTTOM_COLOR;
+    });
+  } else {
+    WELCOME_BOTTOM_COLOR = '#FBF8F2';
+    if(bodyEl) bodyEl.style.background = WELCOME_BOTTOM_COLOR;
+  }
+}
+function removeWelcomeHeadImg(){
+  var fi = document.getElementById('welcome-head-img-file');
+  if(fi){ fi.value=''; delete fi.dataset.value; }
+  WELCOME_HEAD_IMG = null;
+  applyWelcomeAppearance();
 }
 function removeWelcomeImg(){
   var fi = document.getElementById('welcome-img-file');
@@ -2092,6 +2147,32 @@ function removeWelcomeImg(){
           fi.dataset.value = dataUrl;
           var preview = document.getElementById('welcome-img-preview');
           preview.innerHTML=''; var pv=document.createElement('img'); pv.style.cssText='width:100%;height:100%;object-fit:cover'; pv.src=dataUrl; preview.appendChild(pv);
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+})();
+(function(){
+  var fi = document.getElementById('welcome-head-img-file');
+  if(fi){
+    fi.addEventListener('change', function(){
+      var file = fi.files[0];
+      if(!file) return;
+      var reader = new FileReader();
+      reader.onload = function(ev){
+        var img = new Image();
+        img.onload = function(){
+          var maxW = 700;
+          var w = img.width, h = img.height;
+          if(w > maxW){ h = Math.round(h*maxW/w); w = maxW; }
+          var canvas = document.createElement('canvas'); canvas.width=w; canvas.height=h;
+          canvas.getContext('2d').drawImage(img,0,0,w,h);
+          var dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+          fi.dataset.value = dataUrl;
+          WELCOME_HEAD_IMG = dataUrl;
+          applyWelcomeAppearance();
         };
         img.src = ev.target.result;
       };
@@ -2200,11 +2281,13 @@ function saveWelcomeText(){
   if(!txt){ msg.style.color='#B23A3A'; msg.textContent='\u0627\u0643\u062a\u0628 \u0646\u0635\u0627\u064b'; return; }
   if(!confirm('\u062a\u0623\u0643\u064a\u062f: \u0647\u0644 \u062a\u0628\u064a \u062a\u062d\u0641\u0638 \u0627\u0644\u062a\u0639\u062f\u064a\u0644\u0627\u062a \u0639\u0644\u0649 \u0627\u0644\u0634\u0627\u0634\u0629 \u0627\u0644\u062a\u0631\u062d\u064a\u0628\u064a\u0629\u061f \u0647\u0630\u0627 \u0631\u0627\u062d \u064a\u063a\u064a\u0651\u0631\u0647\u0627 \u0644\u0643\u0644 \u0632\u0648\u0627\u0631 \u0627\u0644\u0645\u0648\u0642\u0639.')) return;
   var fi = document.getElementById('welcome-img-file');
+  var headFi = document.getElementById('welcome-head-img-file');
   var colorInput = document.getElementById('welcome-color');
   WELCOME_TEXT = txt;
   if(fi && fi.dataset.value) WELCOME_IMG = fi.dataset.value;
+  if(headFi && headFi.dataset.value) WELCOME_HEAD_IMG = headFi.dataset.value;
   if(colorInput) WELCOME_COLOR = colorInput.value;
-  var payload = {text: WELCOME_TEXT, img: WELCOME_IMG, color: WELCOME_COLOR};
+  var payload = {text: WELCOME_TEXT, img: WELCOME_IMG, color: WELCOME_COLOR, headImg: WELCOME_HEAD_IMG};
   msg.style.color='#8A7A63'; msg.textContent='\u23f3 \u062c\u0627\u0631\u064d \u0627\u0644\u062d\u0641\u0638...';
   if(typeof welcomeRef !== 'undefined' && welcomeRef){
     showSavingIndicator();
@@ -2221,6 +2304,7 @@ function saveWelcomeText(){
         if(d.text) WELCOME_TEXT = d.text;
         WELCOME_IMG = d.img || null;
         WELCOME_COLOR = d.color || '#2C3B30';
+        WELCOME_HEAD_IMG = d.headImg || null;
       }
       hideSavingIndicator(true);
       msg.style.color='#16A34A'; msg.textContent='\u2713 \u062a\u0645 \u0627\u0644\u062d\u0641\u0638 \u0648\u062a\u0623\u0643\u062f \u0648\u0635\u0648\u0644\u0647 \u0644\u0642\u0627\u0639\u062f\u0629 \u0627\u0644\u0628\u064a\u0627\u0646\u0627\u062a';
@@ -2826,6 +2910,10 @@ function ppToggleEdit(){
     var orderLabel = document.createElement('div'); orderLabel.style.cssText='font-size:11px;color:#8A7A63;margin:6px 0 8px';
     orderLabel.textContent = '\u062a\u0631\u062a\u064a\u0628 \u0627\u0644\u0625\u062e\u0648\u0629 (\u0627\u0644\u0623\u0643\u0628\u0631 \u0644\u0644\u0623\u0635\u063a\u0631)';
     form.appendChild(orderLabel);
+    var orderList = document.createElement('div'); orderList.id='pp-sibling-order-list';
+    orderList.style.cssText='background:#F5EFE0;border-radius:10px;padding:8px 12px;margin-bottom:10px;font-size:13px;color:#3B2F22;font-family:\'Scheherazade New\',serif';
+    form.appendChild(orderList);
+    renderSiblingOrderList();
     var orderWrap = document.createElement('div'); orderWrap.style.cssText='display:flex;gap:8px;margin-bottom:14px';
     var upBtn = document.createElement('button'); upBtn.type='button'; upBtn.className='pp-btn pp-btn-outline'; upBtn.style.flex='1';
     upBtn.textContent = '\u25b2 \u0623\u0639\u0644\u0649 (\u0642\u0628\u0644)';
@@ -2843,6 +2931,24 @@ function ppToggleEdit(){
   form.appendChild(saveBtn);
 
   form.style.display='block';
+}
+function renderSiblingOrderList(){
+  var list = document.getElementById('pp-sibling-order-list');
+  if(!list || !ppCurrentPath || ppCurrentPath.length < 2) return;
+  var parentPath = ppCurrentPath.slice(0, -1);
+  var parent = findNodeByPath(parentPath);
+  if(!parent || !parent.c){ list.innerHTML=''; return; }
+  list.innerHTML='';
+  parent.c.forEach(function(ch, i){
+    var row = document.createElement('div');
+    var isMe = ch.n === ppCurrentName;
+    row.style.cssText = 'padding:4px 0;display:flex;gap:8px;align-items:center;' + (isMe ? 'font-weight:800;color:#3B4D40' : 'color:#8A7A63');
+    var num = document.createElement('span'); num.textContent = (i+1)+'.'; num.style.cssText='min-width:18px';
+    row.appendChild(num);
+    var nm = document.createElement('span'); nm.textContent = ch.n + (isMe ? ' \u2190 \u0647\u0630\u0627 \u0647\u0648' : '');
+    row.appendChild(nm);
+    list.appendChild(row);
+  });
 }
 function ppMoveSibling(dir){
   if(!isMainAdmin()) return;
@@ -2872,6 +2978,7 @@ function ppMoveSibling(dir){
     rebuildTreeDOM();
     updateDeceasedInTree();
     if(typeof logActivity !== 'undefined') logActivity('edit','\u062a\u0645 \u062a\u063a\u064a\u064a\u0631 \u062a\u0631\u062a\u064a\u0628 '+targetName);
+    renderSiblingOrderList();
     msg.style.color='#16A34A'; msg.textContent='\u2713 \u062a\u0645 \u062a\u063a\u064a\u064a\u0631 \u0627\u0644\u062a\u0631\u062a\u064a\u0628';
     setTimeout(function(){ msg.textContent=''; }, 2000);
   });
@@ -3055,6 +3162,7 @@ function initFirebaseApp(){
         if(d.text) WELCOME_TEXT = d.text;
         WELCOME_IMG = d.img || null;
         WELCOME_COLOR = d.color || '#2C3B30';
+        WELCOME_HEAD_IMG = d.headImg || null;
       }
       var we=document.getElementById('welcome-edit'); if(we && !we.value) we.value = WELCOME_TEXT;
       if(typeof applyWelcomeAppearance==='function') applyWelcomeAppearance();
