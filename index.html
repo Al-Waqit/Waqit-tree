@@ -45,6 +45,9 @@ body{font-family:'Scheherazade New',serif;background:#F4EFE6;color:#3B2F22;min-h
 .h-ribbon-links{display:flex;flex-wrap:wrap;gap:10px 20px;flex:1;justify-content:center;min-width:0;row-gap:6px}
 .h-ribbon-links::-webkit-scrollbar{display:none}
 .h-ribbon-links a{color:#2C3B30;font-size:13px;font-weight:700;font-family:'Scheherazade New',serif;white-space:nowrap;cursor:pointer;padding:4px 2px;transition:color .15s}
+.h-ribbon-img-mode .h-ribbon-links a{color:#FAF8F5;text-shadow:0 1px 3px rgba(0,0,0,0.8),0 0 8px rgba(0,0,0,0.5)}
+.h-ribbon-img-mode .h-ribbon-name{color:#FAF8F5;text-shadow:0 1px 3px rgba(0,0,0,0.8),0 0 8px rgba(0,0,0,0.5)}
+.h-ribbon-img-mode .h-orn{color:rgba(250,248,245,0.7)}
 .h-ribbon-links a:hover{color:#3B4D40;text-decoration:underline}
 .h-badge{position:absolute;top:-20px;right:10px;z-index:2;min-width:110px;height:44px;padding:0 18px;border-radius:22px;background-image:linear-gradient(rgba(20,30,25,0.4),rgba(20,30,25,0.6)),url('tree-logo.png');background-size:cover;background-position:center;border:2px solid #F0E6D2;box-shadow:0 3px 12px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center}
 .h-badge-txt{color:#FAF8F5;font-size:9px;font-weight:800;font-family:'Scheherazade New',serif;text-align:center;text-shadow:0 1px 3px rgba(0,0,0,0.7);line-height:1.2}
@@ -2263,11 +2266,33 @@ function applyWelcomeAppearance(){
       WELCOME_BOTTOM_COLOR = computeBottomTint(rgb);
       if(bodyEl) bodyEl.style.background = WELCOME_BOTTOM_COLOR;
       if(manualColorEl) manualColorEl.value = WELCOME_BOTTOM_COLOR.match(/^#/) ? WELCOME_BOTTOM_COLOR : '#FBF8F2';
+      cacheWelcomeAppearance();
     });
   } else {
     WELCOME_BOTTOM_COLOR = manualColorEl ? manualColorEl.value : '#FBF8F2';
     if(bodyEl) bodyEl.style.background = WELCOME_BOTTOM_COLOR;
   }
+  cacheWelcomeAppearance();
+}
+function cacheWelcomeAppearance(){
+  try{
+    localStorage.setItem('waqit_welcome_cache', JSON.stringify({
+      text: WELCOME_TEXT, img: WELCOME_IMG, color: WELCOME_COLOR,
+      headImg: WELCOME_HEAD_IMG, bottomColor: WELCOME_BOTTOM_COLOR
+    }));
+  }catch(e){}
+}
+function loadCachedWelcomeAppearance(){
+  try{
+    var cached = localStorage.getItem('waqit_welcome_cache');
+    if(!cached) return;
+    var d = JSON.parse(cached);
+    if(d.text) WELCOME_TEXT = d.text;
+    WELCOME_IMG = d.img || null;
+    WELCOME_COLOR = d.color || '#2C3B30';
+    WELCOME_HEAD_IMG = d.headImg || null;
+    WELCOME_BOTTOM_COLOR = d.bottomColor || '#FBF8F2';
+  }catch(e){}
 }
 function removeWelcomeHeadImg(){
   var fi = document.getElementById('welcome-head-img-file');
@@ -2345,11 +2370,13 @@ function applyRibbonStyle(){
   var ribbon = document.querySelector('.h-ribbon');
   if(!ribbon) return;
   if(RIBBON_IMG){
-    ribbon.style.background = 'linear-gradient(rgba(0,0,0,0.15),rgba(0,0,0,0.15)), url(\'' + RIBBON_IMG + '\')';
+    ribbon.style.background = 'linear-gradient(rgba(20,20,10,0.4),rgba(20,20,10,0.45)), url(\'' + RIBBON_IMG + '\')';
     ribbon.style.backgroundSize = 'cover';
     ribbon.style.backgroundPosition = 'center';
+    ribbon.classList.add('h-ribbon-img-mode');
   } else {
     ribbon.style.background = 'linear-gradient(180deg,' + RIBBON_COLOR + 'ee,' + RIBBON_COLOR + ')';
+    ribbon.classList.remove('h-ribbon-img-mode');
   }
   var colorInput = document.getElementById('ribbon-color');
   if(colorInput) colorInput.value = RIBBON_COLOR;
@@ -2370,12 +2397,12 @@ function removeRibbonImg(){
       reader.onload = function(ev){
         var img = new Image();
         img.onload = function(){
-          var maxW = 900;
+          var maxW = 500;
           var w = img.width, h = img.height;
           if(w > maxW){ h = Math.round(h*maxW/w); w = maxW; }
           var canvas = document.createElement('canvas'); canvas.width=w; canvas.height=h;
           canvas.getContext('2d').drawImage(img,0,0,w,h);
-          fi.dataset.value = canvas.toDataURL('image/jpeg', 0.8);
+          fi.dataset.value = canvas.toDataURL('image/jpeg', 0.65);
         };
         img.src = ev.target.result;
       };
@@ -2420,6 +2447,7 @@ function previewWelcome(){
   document.getElementById('welcome-modal').style.display='flex';
 }
 function checkFirstVisit(){
+  if(typeof loadCachedWelcomeAppearance === 'function') loadCachedWelcomeAppearance();
   document.getElementById('welcome-text').textContent = WELCOME_TEXT;
   applyWelcomeAppearance();
   document.getElementById('welcome-overlay').style.display='block';
