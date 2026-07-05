@@ -292,13 +292,39 @@ function fixArrays(node){
   if(node.c) node.c.forEach(function(ch){fixArrays(ch);});
   return node;
 }
+function captureExpandedPaths(){
+  var paths = [];
+  document.querySelectorAll('.np.active[data-path]').forEach(function(p){
+    paths.push(p.getAttribute('data-path').split('||'));
+  });
+  return paths;
+}
+function restoreExpandedPaths(paths){
+  paths.forEach(function(path){
+    for(var i=1;i<=path.length;i++){
+      var prefix = path.slice(0,i);
+      var card = findCardByPath(prefix);
+      if(!card) continue;
+      var w = card.closest('.nw');
+      if(!w) continue;
+      var vl = w.querySelector(':scope > .vln');
+      var kids = w.querySelector(':scope > .nkids');
+      if(kids) ensureKidsBuilt(kids);
+      card.classList.add('active');
+      if(vl) vl.style.display='';
+      if(kids) kids.classList.add('open');
+    }
+  });
+}
 function rebuildTreeDOM(){
   fixArrays(TREE);
   ALL_ENTRIES = getAllEntries(TREE,[],[]);
+  var expanded = captureExpandedPaths();
   var treeEl = document.getElementById('tree');
   var old = treeEl.querySelector('.nw');
   if(old) treeEl.removeChild(old);
   treeEl.appendChild(build(TREE, 0));
+  restoreExpandedPaths(expanded);
 }
 
 function showSavingIndicator(){
@@ -444,15 +470,6 @@ function saveUsersToFirebase(){
 </div>
 <div class="tree-area">
   <div class="tree-root" id="tree">
-    <div class="lchain">
-      <div class="lc-item"><div class="lc-box first">مطير</div><div class="lc-line"></div></div>
-      <div class="lc-item"><div class="lc-box">بني عبدالله</div><div class="lc-line"></div></div>
-      <div class="lc-item"><div class="lc-box">الشلالحة</div><div class="lc-line"></div></div>
-      <div class="lc-item"><div class="lc-box">الرحامين</div><div class="lc-line"></div></div>
-      <div class="lc-item"><div class="lc-box">عقل</div><div class="lc-line"></div></div>
-      <div class="lc-item"><div class="lc-box">لفاي</div><div class="lc-line"></div></div>
-      <div class="lc-item"><div class="lc-box">مليفي</div><div class="lc-line"></div></div>
-    </div>
   </div>
 </div>
 
@@ -536,27 +553,27 @@ function saveUsersToFirebase(){
     <div class="mod-msg" id="add-msg"></div>
   </div>
   <div id="panel-del" class="mod-body" style="display:none">
-    <label class="mod-label">ابحث عن الشخص</label>
+    <label class="mod-label">ابحث عن الأشخاص (تقدر تختار أكثر من شخص)</label>
     <div style="position:relative">
       <input id="del-q" class="mod-input" type="text" placeholder="ابحث عن اسم…" autocomplete="off"
         oninput="searchDel()" onfocus="searchDel()"
         onblur="setTimeout(function(){document.getElementById('del-sug').style.display='none'},200)">
       <div id="del-sug" class="mod-sug" style="border-color:#c05050"></div>
     </div>
-    <div id="selected-del" class="mod-selected del"></div>
-    <button class="mod-btn del" onclick="confirmDelete()">حذف 🗑</button>
+    <div id="selected-del-list" style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0"></div>
+    <button class="mod-btn del" onclick="confirmDelete()">حذف الكل 🗑</button>
     <div class="mod-msg" id="del-msg"></div>
   </div>
   <div id="panel-dec" class="mod-body" style="display:none">
-    <label class="mod-label">ابحث عن الشخص</label>
+    <label class="mod-label">ابحث عن الأشخاص (تقدر تختار أكثر من شخص)</label>
     <div style="position:relative">
       <input id="dec-q" class="mod-input" type="text" placeholder="ابحث عن اسم…" autocomplete="off"
         oninput="searchDec()" onfocus="searchDec()"
         onblur="setTimeout(function(){document.getElementById('dec-sug').style.display='none'},200)">
-      <div id="dec-sug" class="mod-sug" style="border-color:#C5A880"></div>
+      <div id="dec-sug" class="mod-sug"></div>
     </div>
-    <div id="selected-dec" style="display:none;padding:8px 14px;background:#3a2f1a;border-radius:10px;font-size:13px;color:#C5A880;font-family:'Scheherazade New',serif;margin-top:8px"></div>
-    <button class="mod-btn" onclick="toggleDeceased()" style="background:#5C4D42;color:#FAF8F5;margin-top:16px">حفظ</button>
+    <div id="selected-dec-list" style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0"></div>
+    <button class="mod-btn add" onclick="toggleDeceasedMulti()">تحديد/إلغاء الكل \u2020</button>
     <div class="mod-msg" id="dec-msg"></div>
   </div>
 </div>
@@ -810,7 +827,8 @@ function saveUsersToFirebase(){
 </footer>
 
 <script>
-const TREE = {n:"\u0648\u0642\u064a\u062a",c:[
+const TREE = {n:"\u0645\u0637\u064a\u0631",c:[{n:"\u0628\u0646\u064a \u0639\u0628\u062f\u0627\u0644\u0644\u0647",c:[{n:"\u0627\u0644\u0634\u0644\u0627\u0644\u062d\u0629",c:[{n:"\u0627\u0644\u0631\u062d\u0627\u0645\u064a\u0646",c:[{n:"\u0639\u0642\u0644",c:[{n:"\u0644\u0641\u0627\u064a",c:[{n:"\u0645\u0644\u064a\u0641\u064a",c:[
+{n:"\u0648\u0642\u064a\u062a",c:[
   {n:"\u0645\u0636\u062d\u064a",c:[
     {n:"\u0645\u0637\u0644\u0639",c:[
       {n:"\u0639\u062a\u0642\u0627\u0646",c:[
@@ -935,7 +953,8 @@ const TREE = {n:"\u0648\u0642\u064a\u062a",c:[
     ]},
     {n:"\u0634\u0631\u0627\u0631"}
   ]}
-]};
+]}
+]}]}]}]}]}]}]};
 
 
 function initialsOf(name){
@@ -1034,7 +1053,7 @@ function build(d, lv, fatherName, path) {
         }
       });
     })(p, kids, vl, nbBadge);
-    if (lv === 0) { ensureKidsBuilt(kids); p.classList.add('active'); kids.classList.add('open'); vl.style.display = ''; }
+    if (lv === 0 || d.c.length === 1) { ensureKidsBuilt(kids); p.classList.add('active'); kids.classList.add('open'); vl.style.display = ''; }
   }
   return w;
 }
@@ -1141,7 +1160,7 @@ function doSearch() {
     item.style.cssText='padding:10px 16px;cursor:pointer;border-bottom:1px solid #E3D6BC;transition:background .15s';
     var nl=document.createElement('div');nl.style.cssText='font-size:15px;font-weight:600;color:#3B2F22;margin-bottom:2px';nl.textContent=entry.name;item.appendChild(nl);
     var anc=entry.path.slice(1,-1).reverse().slice(0,3);
-    if(anc.length){var pl=document.createElement('div');pl.style.cssText='font-size:11px;color:#8A7A63';pl.textContent='\u0628\u0646 '+anc.join(' \u2190 ');item.appendChild(pl);}
+    if(anc.length){var pl=document.createElement('div');pl.style.cssText='font-size:11px;color:#8A7A63';pl.textContent='\u0628\u0646 '+anc.join(' \u0628\u0646 ');item.appendChild(pl);}
     item.onmouseenter=function(){item.style.background='#F0E6D2';};
     item.onmouseleave=function(){item.style.background='';};
     item.onmousedown=function(){selectEntry(entry);};
@@ -1152,7 +1171,20 @@ function doSearch() {
 document.getElementById('q').addEventListener('input',doSearch);
 document.getElementById('q').addEventListener('focus',doSearch);
 
-var selFather=null,selDel=null;
+var selFather=null,selDelList=[];
+function renderSelectedDelChips(){
+  var wrap = document.getElementById('selected-del-list');
+  wrap.innerHTML='';
+  selDelList.forEach(function(e, idx){
+    var chip = document.createElement('div');
+    chip.style.cssText='display:flex;align-items:center;gap:6px;background:#3a1a1a;border:1px solid #c05050;color:#f0a0a0;border-radius:20px;padding:5px 10px;font-size:12px;font-family:\'Scheherazade New\',serif';
+    var txt = document.createElement('span'); txt.textContent = e.name; chip.appendChild(txt);
+    var rm = document.createElement('span'); rm.textContent='\u2715'; rm.style.cssText='cursor:pointer;font-weight:700';
+    rm.onclick = function(){ selDelList.splice(idx,1); renderSelectedDelChips(); };
+    chip.appendChild(rm);
+    wrap.appendChild(chip);
+  });
+}
 function toggleAddModal(){var m=document.getElementById('add-modal'),o=document.getElementById('add-overlay');var open=m.style.display!=='none'&&m.style.display!=='';m.style.display=open?'none':'block';o.style.display=open?'none':'block';document.body.style.overflow=open?'':'hidden';if(!open)switchTab('add');}
 function closeAddModal(){document.getElementById('add-modal').style.display='none';document.getElementById('add-overlay').style.display='none';document.body.style.overflow='';}
 function switchTab(t){
@@ -1186,7 +1218,7 @@ function searchFather(){
     it.style.cssText='padding:10px 16px;cursor:pointer;border-bottom:1px solid #E3D6BC;transition:background .15s';
     var nl=document.createElement('div');nl.style.cssText='font-size:15px;font-weight:600;color:#3B2F22;margin-bottom:2px';nl.textContent=e.name;it.appendChild(nl);
     var anc=e.path.slice(1,-1).reverse().slice(0,3);
-    if(anc.length){var pl=document.createElement('div');pl.style.cssText='font-size:11px;color:#8A7A63';pl.textContent='ابن '+anc.join(' ← ');it.appendChild(pl);}
+    if(anc.length){var pl=document.createElement('div');pl.style.cssText='font-size:11px;color:#8A7A63';pl.textContent='بن '+anc.join(' بن ');it.appendChild(pl);}
     it.onmouseenter=function(){it.style.background='#F0E6D2';};
     it.onmouseleave=function(){it.style.background='';};
     it.onmousedown=function(){
@@ -1224,17 +1256,17 @@ function searchDel(){
     it.style.cssText='padding:10px 16px;cursor:pointer;border-bottom:1px solid #E3D6BC;transition:background .15s';
     var nl=document.createElement('div');nl.style.cssText='font-size:15px;font-weight:600;color:#3B2F22;margin-bottom:2px';nl.textContent=e.name;it.appendChild(nl);
     var anc=e.path.slice(1,-1).reverse().slice(0,3);
-    if(anc.length){var pl=document.createElement('div');pl.style.cssText='font-size:11px;color:#8A7A63';pl.textContent='\u0628\u0646 '+anc.join(' \u2190 ');it.appendChild(pl);}
+    if(anc.length){var pl=document.createElement('div');pl.style.cssText='font-size:11px;color:#8A7A63';pl.textContent='\u0628\u0646 '+anc.join(' \u0628\u0646 ');it.appendChild(pl);}
     it.onmouseenter=function(){it.style.background='#F0E6D2';};
     it.onmouseleave=function(){it.style.background='';};
     it.onmousedown=function(){
-      selDel=e;
-      var fullName=e.name+(f?' '+f:'')+(g?' '+g:'');
-      document.getElementById('del-q').value=fullName;
+      var key = e.path.join('||');
+      if(!selDelList.some(function(x){ return x.path.join('||')===key; })){
+        selDelList.push(e);
+        renderSelectedDelChips();
+      }
+      document.getElementById('del-q').value='';
       s.style.display='none';
-      var sd=document.getElementById('selected-del');
-      sd.textContent='\uD83D\uDDD1 '+fullName;
-      sd.style.display='block';
     };
     s.appendChild(it);
   });
@@ -1293,27 +1325,32 @@ function saveNewPerson(){
 
 function confirmDelete(){
   var msg=document.getElementById('del-msg');
-  if(!selDel){msg.style.color='#B23A3A';msg.textContent='\u26a0 \u0627\u062e\u062a\u0631 \u0634\u062e\u0635\u0627\u064b';return;}
-  var nm=selDel.name;
-  var path=selDel.path;
+  if(!selDelList.length){msg.style.color='#B23A3A';msg.textContent='\u26a0 \u0627\u062e\u062a\u0631 \u0634\u062e\u0635 \u0648\u0627\u062d\u062f \u0639\u0644\u0649 \u0627\u0644\u0623\u0642\u0644';return;}
+  var names = selDelList.map(function(e){ return e.name; });
+  if(!confirm('\u0647\u0644 \u0623\u0646\u062a \u0645\u062a\u0623\u0643\u062f \u0645\u0646 \u062d\u0630\u0641: '+names.join('\u060c ')+'\u061f')) return;
+  var list = selDelList.slice();
   transactTree(function(working){
-    var removed = path ? removeNodeByPath(path, working) : false;
-    if(!removed) removed = removeN(nm,working);
-    if(!removed) return false;
+    var anyRemoved = false;
+    list.forEach(function(e){
+      var removed = e.path ? removeNodeByPath(e.path, working) : false;
+      if(!removed) removed = removeN(e.name, working);
+      if(removed) anyRemoved = true;
+    });
+    if(!anyRemoved) return false;
   }, function(ok, reason){
     if(!ok){
       msg.style.color='#B23A3A';
-      msg.textContent = reason==='not_found' ? '\u26a0 \u0644\u0645 \u064a\u062a\u0645 \u0627\u0644\u0639\u062b\u0648\u0631 \u0639\u0644\u064a\u0647 \u2014 \u062d\u0627\u0648\u0644 \u0645\u0631\u0629 \u062b\u0627\u0646\u064a\u0629' : '\u26a0 \u0641\u0634\u0644 \u0627\u0644\u062d\u0630\u0641\u060c \u062d\u0627\u0648\u0644 \u0645\u0631\u0629 \u062b\u0627\u0646\u064a\u0629';
+      msg.textContent = reason==='not_found' ? '\u26a0 \u0644\u0645 \u064a\u062a\u0645 \u0627\u0644\u0639\u062b\u0648\u0631 \u0639\u0644\u064a\u0647\u0645 \u2014 \u062d\u0627\u0648\u0644 \u0645\u0631\u0629 \u062b\u0627\u0646\u064a\u0629' : '\u26a0 \u0641\u0634\u0644 \u0627\u0644\u062d\u0630\u0641\u060c \u062d\u0627\u0648\u0644 \u0645\u0631\u0629 \u062b\u0627\u0646\u064a\u0629';
       return;
     }
     ALL_ENTRIES=getAllEntries(TREE,[],[]);
     rebuildTreeDOM();
     updateDeceasedInTree();
-    if(typeof logActivity!=='undefined')logActivity('delete','\u062a\u0645 \u062d\u0630\u0641 '+nm);
-    msg.style.color='#16A34A';msg.textContent='\u2713 \u062a\u0645 \u062d\u0630\u0641 '+nm;
-    selDel=null;
+    if(typeof logActivity!=='undefined')logActivity('delete','\u062a\u0645 \u062d\u0630\u0641 '+names.join('\u060c '));
+    msg.style.color='#16A34A';msg.textContent='\u2713 \u062a\u0645 \u062d\u0630\u0641 '+list.length+' \u0634\u062e\u0635/\u0623\u0634\u062e\u0627\u0635';
+    selDelList=[];
+    renderSelectedDelChips();
     document.getElementById('del-q').value='';
-    document.getElementById('selected-del').style.display='none';
     setTimeout(function(){msg.textContent='';closeAddModal();},2000);
   });
 }
@@ -2534,84 +2571,25 @@ function startVoiceSearch(){
 
 // ===== DECEASED =====
 var DECEASED = {};
-var selDec = null;
 var decRef = null;
 
-function searchDec(){
-  var v=document.getElementById('dec-q').value.trim();
-  var s=document.getElementById('dec-sug');
-  if(!v){s.style.display='none';return;}
-  var words=v.split(' ').filter(function(w){return w.length>0;});
-  var m=ALL_ENTRIES.filter(function(e){
-    var f=e.path.length>1?e.path[e.path.length-2]:'';
-    var g=e.path.length>2?e.path[e.path.length-3]:'';
-    if(words.length>0&&e.name.indexOf(words[0])===-1) return false;
-    if(words.length>1&&f.indexOf(words[1])===-1) return false;
-    if(words.length>2&&g.indexOf(words[2])===-1) return false;
-    return true;
-  });
-  s.innerHTML='';
-  m.slice(0,15).forEach(function(e){
-    var f=e.path.length>1?e.path[e.path.length-2]:'';
-    var g=e.path.length>2?e.path[e.path.length-3]:'';
-    var it=document.createElement('div');
-    it.style.cssText='padding:10px 16px;cursor:pointer;border-bottom:1px solid #E3D6BC;transition:background .15s';
-    var nm=document.createElement('div');nm.style.cssText='font-size:15px;font-weight:600;color:#3B2F22;margin-bottom:2px';nm.textContent=e.name;it.appendChild(nm);
-    var anc=e.path.slice(1,-1).reverse().slice(0,3);
-    if(anc.length){var pl=document.createElement('div');pl.style.cssText='font-size:11px;color:#8A7A63';pl.textContent='\u0628\u0646 '+anc.join(' \u2190 ');it.appendChild(pl);}
-    it.onmouseenter=function(){it.style.background='#F0E6D2';};
-    it.onmouseleave=function(){it.style.background='';};
-    it.onmousedown=function(){
-      selDec=e;
-      document.getElementById('dec-q').value=e.name;
-      s.style.display='none';
-      var sd=document.getElementById('selected-dec');
-      var nd = findNodeByPath(e.path);
-      sd.textContent=(nd && nd.dead)?'\u2713 \u0645\u0633\u062c\u0644 \u0643\u0645\u062a\u0648\u0641\u0649 - \u0627\u0636\u063a\u0637 \u062d\u0641\u0638 \u0644\u0625\u0644\u063a\u0627\u0621':'\u0627\u0636\u063a\u0637 \u062d\u0641\u0638 \u0644\u062a\u062d\u062f\u064a\u062f\u0647 \u0643\u0645\u062a\u0648\u0641\u0649';
-      sd.style.display='block';
-    };
-    s.appendChild(it);
-  });
-  s.style.display=m.length?'block':'none';
-}
-
-function toggleDeceased(){
-  var msg=document.getElementById('dec-msg');
-  if(!selDec){msg.style.color='#B23A3A';msg.textContent='\u0627\u062e\u062a\u0631 \u0634\u062e\u0635\u0627\u064b \u0623\u0648\u0644\u0627\u064b';return;}
-  var name=selDec.name;
-  var path=selDec.path;
-  transactTree(function(working){
-    var nd = path ? findNodeByPath(path, working) : null;
-    if(!nd) nd = findN(name, working);
-    if(!nd) return false;
-    if(nd.dead) delete nd.dead; else nd.dead = true;
-  }, function(ok, reason){
-    if(!ok){
-      msg.style.color='#B23A3A';
-      msg.textContent = reason==='not_found' ? '\u26a0 \u062a\u0639\u0630\u0651\u0631 \u0625\u064a\u062c\u0627\u062f \u0627\u0644\u0634\u062e\u0635' : '\u26a0 \u0641\u0634\u0644 \u0627\u0644\u062d\u0641\u0638\u060c \u062d\u0627\u0648\u0644 \u0645\u0631\u0629 \u062b\u0627\u0646\u064a\u0629';
-      return;
-    }
-    rebuildTreeDOM();
-    var nowNode = findNodeByPath(path);
-    msg.style.color='#16A34A';
-    msg.textContent = (nowNode && nowNode.dead) ? '\u062a\u0645 \u062a\u062d\u062f\u064a\u062f '+name+' \u0643\u0645\u062a\u0648\u0641\u0649' : '\u062a\u0645 \u0625\u0644\u063a\u0627\u0621 \u062a\u062d\u062f\u064a\u062f '+name;
-    if(typeof logActivity!=='undefined')logActivity('edit', name+' '+((nowNode && nowNode.dead)?'\u0645\u062a\u0648\u0641\u0649':'\u0625\u0644\u063a\u0627\u0621 \u062a\u062d\u062f\u064a\u062f \u0627\u0644\u0648\u0641\u0627\u0629'));
-    selDec=null;
-    document.getElementById('dec-q').value='';
-    document.getElementById('selected-dec').style.display='none';
-    setTimeout(function(){msg.textContent='';closeAddModal();},1500);
-  });
-}
-
-function updateDeceasedInTree(){
-  // Deprecated: deceased labels are now rendered inline per-node in makeCard()
-  // based on node.dead, avoiding the old name-collision bug. Kept as a no-op
-  // so existing call sites don't break.
-}
-
 // ===== DECEASED =====
-var selDec = null;
-
+var selDecList = [];
+function renderSelectedDecChips(){
+  var wrap = document.getElementById('selected-dec-list');
+  wrap.innerHTML='';
+  selDecList.forEach(function(e, idx){
+    var nd = findNodeByPath(e.path);
+    var isDead = !!(nd && nd.dead);
+    var chip = document.createElement('div');
+    chip.style.cssText='display:flex;align-items:center;gap:6px;background:#3a2f1a;border:1px solid #C5A880;color:#C5A880;border-radius:20px;padding:5px 10px;font-size:12px;font-family:\'Scheherazade New\',serif';
+    var txt = document.createElement('span'); txt.textContent = e.name + (isDead ? ' (\u0645\u062a\u0648\u0641\u0649 \u062d\u0627\u0644\u064a\u064b\u0627)' : ''); chip.appendChild(txt);
+    var rm = document.createElement('span'); rm.textContent='\u2715'; rm.style.cssText='cursor:pointer;font-weight:700';
+    rm.onclick = function(){ selDecList.splice(idx,1); renderSelectedDecChips(); };
+    chip.appendChild(rm);
+    wrap.appendChild(chip);
+  });
+}
 function searchDec(){
   var v=document.getElementById('dec-q').value.trim();
   var s=document.getElementById('dec-sug');
@@ -2633,48 +2611,51 @@ function searchDec(){
     it.style.cssText='padding:10px 16px;cursor:pointer;border-bottom:1px solid #E3D6BC;transition:background .15s';
     var nl=document.createElement('div');nl.style.cssText='font-size:15px;font-weight:600;color:#3B2F22;margin-bottom:2px';nl.textContent=e.name;it.appendChild(nl);
     var anc=e.path.slice(1,-1).reverse().slice(0,3);
-    if(anc.length){var pl=document.createElement('div');pl.style.cssText='font-size:11px;color:#8A7A63';pl.textContent='\u0628\u0646 '+anc.join(' \u2190 ');it.appendChild(pl);}
+    if(anc.length){var pl=document.createElement('div');pl.style.cssText='font-size:11px;color:#8A7A63';pl.textContent='\u0628\u0646 '+anc.join(' \u0628\u0646 ');it.appendChild(pl);}
     it.onmouseenter=function(){it.style.background='#F0E6D2';};
     it.onmouseleave=function(){it.style.background='';};
     it.onmousedown=function(){
-      selDec=e;
-      var fullName=e.name+(f?' '+f:'')+(g?' '+g:'');
-      document.getElementById('dec-q').value=fullName;
+      var key = e.path.join('||');
+      if(!selDecList.some(function(x){ return x.path.join('||')===key; })){
+        selDecList.push(e);
+        renderSelectedDecChips();
+      }
+      document.getElementById('dec-q').value='';
       s.style.display='none';
-      var sd=document.getElementById('selected-dec');
-      var nd = findNodeByPath(e.path);
-      sd.textContent=(nd && nd.dead)?'\u2713 \u0645\u0633\u062c\u0644 \u0643\u0645\u062a\u0648\u0641\u0649 - \u0627\u0636\u063a\u0637 \u062d\u0641\u0638 \u0644\u0625\u0644\u063a\u0627\u0621':'\u0627\u0636\u063a\u0637 \u062d\u0641\u0638 \u0644\u062a\u062d\u062f\u064a\u062f\u0647 \u0643\u0645\u062a\u0648\u0641\u0649';
-      sd.style.display='block';
     };
     s.appendChild(it);
   });
   s.style.display=m.length?'block':'none';
 }
 
-function toggleDeceased(){
+function toggleDeceasedMulti(){
   var msg=document.getElementById('dec-msg');
-  if(!selDec){msg.style.color='#B23A3A';msg.textContent='\u0627\u062e\u062a\u0631 \u0634\u062e\u0635\u0627\u064b \u0623\u0648\u0644\u0627\u064b';return;}
-  var name=selDec.name;
-  var path=selDec.path;
+  if(!selDecList.length){msg.style.color='#B23A3A';msg.textContent='\u26a0 \u0627\u062e\u062a\u0631 \u0634\u062e\u0635 \u0648\u0627\u062d\u062f \u0639\u0644\u0649 \u0627\u0644\u0623\u0642\u0644';return;}
+  var list = selDecList.slice();
+  var names = list.map(function(e){ return e.name; });
   transactTree(function(working){
-    var nd = path ? findNodeByPath(path, working) : null;
-    if(!nd) nd = findN(name, working);
-    if(!nd) return false;
-    if(nd.dead) delete nd.dead; else nd.dead = true;
+    var anyFound = false;
+    list.forEach(function(e){
+      var nd = e.path ? findNodeByPath(e.path, working) : null;
+      if(!nd) nd = findN(e.name, working);
+      if(!nd) return;
+      anyFound = true;
+      if(nd.dead) delete nd.dead; else nd.dead = true;
+    });
+    if(!anyFound) return false;
   }, function(ok, reason){
     if(!ok){
       msg.style.color='#B23A3A';
-      msg.textContent = reason==='not_found' ? '\u26a0 \u062a\u0639\u0630\u0651\u0631 \u0625\u064a\u062c\u0627\u062f \u0627\u0644\u0634\u062e\u0635' : '\u26a0 \u0641\u0634\u0644 \u0627\u0644\u062d\u0641\u0638\u060c \u062d\u0627\u0648\u0644 \u0645\u0631\u0629 \u062b\u0627\u0646\u064a\u0629';
+      msg.textContent = reason==='not_found' ? '\u26a0 \u062a\u0639\u0630\u0651\u0631 \u0625\u064a\u062c\u0627\u062f \u0627\u0644\u0623\u0634\u062e\u0627\u0635' : '\u26a0 \u0641\u0634\u0644 \u0627\u0644\u062d\u0641\u0638\u060c \u062d\u0627\u0648\u0644 \u0645\u0631\u0629 \u062b\u0627\u0646\u064a\u0629';
       return;
     }
     rebuildTreeDOM();
-    var nowNode = findNodeByPath(path);
     msg.style.color='#16A34A';
-    msg.textContent = (nowNode && nowNode.dead) ? '\u062a\u0645 \u062a\u062d\u062f\u064a\u062f '+name+' \u0643\u0645\u062a\u0648\u0641\u0649' : '\u062a\u0645 \u0625\u0644\u063a\u0627\u0621 \u062a\u062d\u062f\u064a\u062f '+name;
-    if(typeof logActivity!=='undefined')logActivity('edit', name+' '+((nowNode && nowNode.dead)?'\u0645\u062a\u0648\u0641\u0649':'\u0625\u0644\u063a\u0627\u0621 \u062a\u062d\u062f\u064a\u062f \u0627\u0644\u0648\u0641\u0627\u0629'));
-    selDec=null;
+    msg.textContent = '\u2713 \u062a\u0645 \u062a\u062d\u062f\u064a\u062b \u062d\u0627\u0644\u0629 '+names.join('\u060c ');
+    if(typeof logActivity!=='undefined')logActivity('edit', '\u062a\u062d\u062f\u064a\u062b \u062d\u0627\u0644\u0629 \u0627\u0644\u0648\u0641\u0627\u0629: '+names.join('\u060c '));
+    selDecList=[];
+    renderSelectedDecChips();
     document.getElementById('dec-q').value='';
-    document.getElementById('selected-dec').style.display='none';
     setTimeout(function(){msg.textContent='';closeAddModal();},1500);
   });
 }
@@ -3237,8 +3218,20 @@ function initFirebaseApp(){
     treeRef.once('value', function(snap){
       var saved = snap.val();
       if(saved && saved.c && saved.c.length > 0){
-        TREE.c = saved.c;
-        rebuildTreeDOM();
+        var isNewFormat = saved.c.length === 1 && saved.c[0].n === '\u0628\u0646\u064a \u0639\u0628\u062f\u0627\u0644\u0644\u0647';
+        if(isNewFormat){
+          TREE.c = saved.c;
+          rebuildTreeDOM();
+        } else {
+          // Old format detected: saved.c is وقيت's real children directly.
+          // Wrap them under the fixed ancestor chain, preserving all real data.
+          console.log('Migrating tree to include ancestor chain...');
+          TREE.c = [{n:'\u0628\u0646\u064a \u0639\u0628\u062f\u0627\u0644\u0644\u0647',c:[{n:'\u0627\u0644\u0634\u0644\u0627\u0644\u062d\u0629',c:[{n:'\u0627\u0644\u0631\u062d\u0627\u0645\u064a\u0646',c:[{n:'\u0639\u0642\u0644',c:[{n:'\u0644\u0641\u0627\u064a',c:[{n:'\u0645\u0644\u064a\u0641\u064a',c:[
+            {n:'\u0648\u0642\u064a\u062a', c: saved.c}
+          ]}]}]}]}]}]}];
+          rebuildTreeDOM();
+          saveToFirebase();
+        }
         setTimeout(function(){ if(typeof fitZoomToScreen==='function') fitZoomToScreen(); }, 150);
       } else {
         console.log('Firebase empty - uploading tree...');
