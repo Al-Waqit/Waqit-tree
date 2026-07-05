@@ -322,9 +322,14 @@ function rebuildTreeDOM(){
   var expanded = captureExpandedPaths();
   var treeEl = document.getElementById('tree');
   var old = treeEl.querySelector('.nw');
-  if(old) treeEl.removeChild(old);
-  treeEl.appendChild(build(TREE, 0));
-  restoreExpandedPaths(expanded);
+  try{
+    var fresh = build(TREE, 0);
+    if(old) treeEl.removeChild(old);
+    treeEl.appendChild(fresh);
+    restoreExpandedPaths(expanded);
+  }catch(e){
+    console.log('rebuildTreeDOM error (keeping previous view):', e);
+  }
 }
 
 function showSavingIndicator(){
@@ -415,6 +420,17 @@ function saveUsersToFirebase(){
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js" defer></script>
 </head>
 <body>
+<div id="onpage-error-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:99999;background:#8B1A1A;color:#fff;padding:14px;font-size:13px;font-family:monospace;direction:ltr;text-align:left;white-space:pre-wrap;word-break:break-all;max-height:50vh;overflow-y:auto"></div>
+<script>
+window.onerror = function(msg, src, line, col, err){
+  var el = document.getElementById('onpage-error-banner');
+  if(el){
+    el.style.display = 'block';
+    el.textContent = 'JS ERROR: ' + msg + '\nFile: ' + src + '\nLine: ' + line + ':' + col + (err && err.stack ? '\n' + err.stack : '');
+  }
+  return false;
+};
+</script>
 <div class="header">
   <div class="h-bism">بِسْمِ اللهِ الرَّحْمَنِ الرَّحِيم</div>
   <div class="h-divider"></div>
@@ -470,6 +486,15 @@ function saveUsersToFirebase(){
 </div>
 <div class="tree-area">
   <div class="tree-root" id="tree">
+    <div class="lchain">
+      <div class="lc-item"><div class="lc-box first">مطير</div><div class="lc-line"></div></div>
+      <div class="lc-item"><div class="lc-box">بني عبدالله</div><div class="lc-line"></div></div>
+      <div class="lc-item"><div class="lc-box">الشلالحة</div><div class="lc-line"></div></div>
+      <div class="lc-item"><div class="lc-box">الرحامين</div><div class="lc-line"></div></div>
+      <div class="lc-item"><div class="lc-box">عقل</div><div class="lc-line"></div></div>
+      <div class="lc-item"><div class="lc-box">لفاي</div><div class="lc-line"></div></div>
+      <div class="lc-item"><div class="lc-box">مليفي</div><div class="lc-line"></div></div>
+    </div>
   </div>
 </div>
 
@@ -827,8 +852,7 @@ function saveUsersToFirebase(){
 </footer>
 
 <script>
-const TREE = {n:"\u0645\u0637\u064a\u0631",c:[{n:"\u0628\u0646\u064a \u0639\u0628\u062f\u0627\u0644\u0644\u0647",c:[{n:"\u0627\u0644\u0634\u0644\u0627\u0644\u062d\u0629",c:[{n:"\u0627\u0644\u0631\u062d\u0627\u0645\u064a\u0646",c:[{n:"\u0639\u0642\u0644",c:[{n:"\u0644\u0641\u0627\u064a",c:[{n:"\u0645\u0644\u064a\u0641\u064a",c:[
-{n:"\u0648\u0642\u064a\u062a",c:[
+const TREE = {n:"\u0648\u0642\u064a\u062a",c:[
   {n:"\u0645\u0636\u062d\u064a",c:[
     {n:"\u0645\u0637\u0644\u0639",c:[
       {n:"\u0639\u062a\u0642\u0627\u0646",c:[
@@ -953,8 +977,7 @@ const TREE = {n:"\u0645\u0637\u064a\u0631",c:[{n:"\u0628\u0646\u064a \u0639\u062
     ]},
     {n:"\u0634\u0631\u0627\u0631"}
   ]}
-]}
-]}]}]}]}]}]}]};
+]};
 
 
 function initialsOf(name){
@@ -1053,14 +1076,17 @@ function build(d, lv, fatherName, path) {
         }
       });
     })(p, kids, vl, nbBadge);
-    if (lv === 0 || d.c.length === 1) { ensureKidsBuilt(kids); p.classList.add('active'); kids.classList.add('open'); vl.style.display = ''; }
+    if (lv === 0) { ensureKidsBuilt(kids); p.classList.add('active'); kids.classList.add('open'); vl.style.display = ''; }
   }
   return w;
 }
 
 var treeEl = document.getElementById('tree');
-var lastLn = document.createElement('div'); lastLn.className = 'lc-line';
-document.querySelector('.lchain').appendChild(lastLn);
+var lchainEl = document.querySelector('.lchain');
+if(lchainEl){
+  var lastLn = document.createElement('div'); lastLn.className = 'lc-line';
+  lchainEl.appendChild(lastLn);
+}
 treeEl.appendChild(build(TREE, 0));
 
 
@@ -3215,23 +3241,37 @@ function initFirebaseApp(){
     fieldVisRef.on('value', function(snap){ var d=snap.val(); if(d && typeof d==='object'){ FIELD_VIS = d; renderFieldVisToggles(); if(ppCurrentName) renderPersonPage(); } applyGlobalToggles(); });
 
     // Load tree once on start
+    function applyIncomingTree(saved){
+      if(!(saved && saved.c && saved.c.length > 0)) return false;
+      var isWrappedFormat = saved.c.length === 1 && saved.c[0].n === '\u0628\u0646\u064a \u0639\u0628\u062f\u0627\u0644\u0644\u0647';
+      if(isWrappedFormat){
+        // A previous attempt wrapped the data under an ancestor chain.
+        // Unwrap it back to the flat, known-working format (وقيت as root).
+        console.log('Unwrapping ancestor-chain format back to normal...');
+        var node = saved.c[0];
+        // Walk down the single-child chain to find وقيت's real children.
+        while(node && node.c && node.c.length === 1 && node.n !== '\u0648\u0642\u064a\u062a'){
+          node = node.c[0];
+        }
+        if(node && node.n === '\u0648\u0642\u064a\u062a' && node.c){
+          TREE.c = node.c;
+        } else if(node && node.c){
+          TREE.c = node.c;
+        } else {
+          TREE.c = saved.c;
+        }
+        rebuildTreeDOM();
+        saveToFirebase();
+        return true;
+      }
+      TREE.c = saved.c;
+      rebuildTreeDOM();
+      return true;
+    }
     treeRef.once('value', function(snap){
       var saved = snap.val();
       if(saved && saved.c && saved.c.length > 0){
-        var isNewFormat = saved.c.length === 1 && saved.c[0].n === '\u0628\u0646\u064a \u0639\u0628\u062f\u0627\u0644\u0644\u0647';
-        if(isNewFormat){
-          TREE.c = saved.c;
-          rebuildTreeDOM();
-        } else {
-          // Old format detected: saved.c is وقيت's real children directly.
-          // Wrap them under the fixed ancestor chain, preserving all real data.
-          console.log('Migrating tree to include ancestor chain...');
-          TREE.c = [{n:'\u0628\u0646\u064a \u0639\u0628\u062f\u0627\u0644\u0644\u0647',c:[{n:'\u0627\u0644\u0634\u0644\u0627\u0644\u062d\u0629',c:[{n:'\u0627\u0644\u0631\u062d\u0627\u0645\u064a\u0646',c:[{n:'\u0639\u0642\u0644',c:[{n:'\u0644\u0641\u0627\u064a',c:[{n:'\u0645\u0644\u064a\u0641\u064a',c:[
-            {n:'\u0648\u0642\u064a\u062a', c: saved.c}
-          ]}]}]}]}]}]}];
-          rebuildTreeDOM();
-          saveToFirebase();
-        }
+        applyIncomingTree(saved);
         setTimeout(function(){ if(typeof fitZoomToScreen==='function') fitZoomToScreen(); }, 150);
       } else {
         console.log('Firebase empty - uploading tree...');
@@ -3243,9 +3283,7 @@ function initFirebaseApp(){
       // Real-time listener - no firebaseReady check so updates always come through
       treeRef.on('value', function(snap2){
         var d = snap2.val();
-        if(d && d.c && d.c.length > 0){
-          TREE.c = d.c;
-          rebuildTreeDOM();
+        if(applyIncomingTree(d)){
           updateDeceasedInTree();
         }
       });
