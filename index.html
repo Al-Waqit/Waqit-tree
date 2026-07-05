@@ -732,8 +732,11 @@ window.onerror = function(msg, src, line, col, err){
         <input type="file" id="welcome-head-img-file" accept="image/*" style="font-size:11px;color:#8A7A63;width:100%;margin-bottom:6px">
         <button onclick="removeWelcomeHeadImg()" style="background:none;border:none;color:#B23A3A;font-size:11px;cursor:pointer;font-family:'Scheherazade New',serif;margin-bottom:10px">إزالة صورة الخلفية</button>
         <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:#3B2F22;font-family:'Scheherazade New',serif;margin-bottom:10px;cursor:pointer">
-          <input type="checkbox" id="wm-auto-color" checked onchange="applyWelcomeAppearance()"> لوّن الخلفية البيضاء تلقائيًا حسب الصورة (وإلا تبقى بيضاء ثابتة)
+          <input type="checkbox" id="wm-auto-color" onchange="applyWelcomeAppearance()"> لوّن الخلفية السفلية تلقائيًا حسب الصورة
         </label>
+        <div style="font-size:12px;color:#C5A880;font-family:'Scheherazade New',serif;margin:6px 0">أو اختر لون فاتح بنفسك للخلفية السفلية</div>
+        <input type="color" id="wm-bottom-color" value="#FBF8F2" style="width:100%;height:38px;border-radius:10px;border:1px solid #C9A876;cursor:pointer;margin-bottom:8px" onchange="applyWelcomeAppearance()">
+        <div style="display:flex;gap:6px;margin-bottom:10px" id="wm-bottom-presets"></div>
 
         <button onclick="saveWelcomeText()" class="login-btn" style="background:#4A3B32">حفظ كل التعديلات</button>
         <button onclick="previewWelcome()" class="login-btn" style="background:#2A3A4A;margin-top:6px">👁 معاينة الرسالة الآن</button>
@@ -2208,7 +2211,22 @@ function computeBottomTint(rgb){
   var b = Math.round(rgb.b*0.22 + 255*0.78);
   return 'rgb('+r+','+g+','+b+')';
 }
+var WM_BOTTOM_PRESETS = ['#FBF8F2', '#F4EFE6', '#FDF6EC', '#F0F4F0', '#F5F0F7', '#FFF5F5'];
+function renderBottomColorPresets(){
+  var wrap = document.getElementById('wm-bottom-presets');
+  if(!wrap || wrap.children.length) return;
+  WM_BOTTOM_PRESETS.forEach(function(c){
+    var sw = document.createElement('div');
+    sw.style.cssText = 'width:32px;height:32px;border-radius:8px;background:'+c+';border:1px solid #C9A876;cursor:pointer';
+    sw.onclick = function(){
+      var input = document.getElementById('wm-bottom-color');
+      if(input){ input.value = c; applyWelcomeAppearance(); }
+    };
+    wrap.appendChild(sw);
+  });
+}
 function applyWelcomeAppearance(){
+  renderBottomColorPresets();
   var iconEl = document.getElementById('wm-icon');
   if(WELCOME_HEAD_IMG){
     iconEl.style.display = 'none';
@@ -2237,15 +2255,17 @@ function applyWelcomeAppearance(){
 
   var bodyEl = document.getElementById('wm-body');
   var autoColorEl = document.getElementById('wm-auto-color');
-  var autoColorOn = autoColorEl ? autoColorEl.checked : true;
+  var autoColorOn = autoColorEl ? autoColorEl.checked : false;
+  var manualColorEl = document.getElementById('wm-bottom-color');
   var sourceImg = WELCOME_HEAD_IMG || WELCOME_IMG;
   if(sourceImg && autoColorOn){
     extractDominantColor(sourceImg, function(rgb){
       WELCOME_BOTTOM_COLOR = computeBottomTint(rgb);
       if(bodyEl) bodyEl.style.background = WELCOME_BOTTOM_COLOR;
+      if(manualColorEl) manualColorEl.value = WELCOME_BOTTOM_COLOR.match(/^#/) ? WELCOME_BOTTOM_COLOR : '#FBF8F2';
     });
   } else {
-    WELCOME_BOTTOM_COLOR = '#FBF8F2';
+    WELCOME_BOTTOM_COLOR = manualColorEl ? manualColorEl.value : '#FBF8F2';
     if(bodyEl) bodyEl.style.background = WELCOME_BOTTOM_COLOR;
   }
 }
@@ -2418,11 +2438,15 @@ function saveWelcomeText(){
   var fi = document.getElementById('welcome-img-file');
   var headFi = document.getElementById('welcome-head-img-file');
   var colorInput = document.getElementById('welcome-color');
+  var bottomColorInput = document.getElementById('wm-bottom-color');
+  var autoColorEl = document.getElementById('wm-auto-color');
   WELCOME_TEXT = txt;
   if(fi && fi.dataset.value) WELCOME_IMG = fi.dataset.value;
   if(headFi && headFi.dataset.value) WELCOME_HEAD_IMG = headFi.dataset.value;
   if(colorInput) WELCOME_COLOR = colorInput.value;
-  var payload = {text: WELCOME_TEXT, img: WELCOME_IMG, color: WELCOME_COLOR, headImg: WELCOME_HEAD_IMG};
+  var bottomColor = bottomColorInput ? bottomColorInput.value : '#FBF8F2';
+  var autoColorOn = autoColorEl ? autoColorEl.checked : false;
+  var payload = {text: WELCOME_TEXT, img: WELCOME_IMG, color: WELCOME_COLOR, headImg: WELCOME_HEAD_IMG, bottomColor: bottomColor, autoColor: autoColorOn};
   msg.style.color='#8A7A63'; msg.textContent='\u23f3 \u062c\u0627\u0631\u064d \u0627\u0644\u062d\u0641\u0638...';
   if(typeof welcomeRef !== 'undefined' && welcomeRef){
     showSavingIndicator();
@@ -2440,6 +2464,8 @@ function saveWelcomeText(){
         WELCOME_IMG = d.img || null;
         WELCOME_COLOR = d.color || '#2C3B30';
         WELCOME_HEAD_IMG = d.headImg || null;
+        if(d.bottomColor && bottomColorInput) bottomColorInput.value = d.bottomColor;
+        if(autoColorEl) autoColorEl.checked = !!d.autoColor;
       }
       hideSavingIndicator(true);
       msg.style.color='#16A34A'; msg.textContent='\u2713 \u062a\u0645 \u0627\u0644\u062d\u0641\u0638 \u0648\u062a\u0623\u0643\u062f \u0648\u0635\u0648\u0644\u0647 \u0644\u0642\u0627\u0639\u062f\u0629 \u0627\u0644\u0628\u064a\u0627\u0646\u0627\u062a';
@@ -3205,6 +3231,7 @@ function initFirebaseApp(){
     activityLogRef.once('value', function(snap){ var d=snap.val(); if(d && Array.isArray(d)) ACTIVITY_LOG = d; });
     welcomeRef.on('value', function(snap){
       var d=snap.val();
+      var savedBottomColor = null, savedAutoColor = null;
       if(d && typeof d==='string'){
         WELCOME_TEXT = d;
       } else if(d && typeof d==='object'){
@@ -3212,8 +3239,12 @@ function initFirebaseApp(){
         WELCOME_IMG = d.img || null;
         WELCOME_COLOR = d.color || '#2C3B30';
         WELCOME_HEAD_IMG = d.headImg || null;
+        savedBottomColor = d.bottomColor || null;
+        savedAutoColor = !!d.autoColor;
       }
       var we=document.getElementById('welcome-edit'); if(we && !we.value) we.value = WELCOME_TEXT;
+      var bc = document.getElementById('wm-bottom-color'); if(bc && savedBottomColor) bc.value = savedBottomColor;
+      var ac = document.getElementById('wm-auto-color'); if(ac) ac.checked = savedAutoColor;
       if(typeof applyWelcomeAppearance==='function') applyWelcomeAppearance();
     });
     var decLoaded = false, decMigrationDone = false;
