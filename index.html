@@ -776,6 +776,14 @@ window.onerror = function(msg, src, line, col, err){
         <input type="checkbox" id="photo-feature-toggle" onchange="togglePhotoFeature()">
       </label>
       <div style="font-size:10px;color:#8A7A63;margin-top:6px;font-family:'Scheherazade New',serif">هذا الإعداد ما يشوفه ولا يقدر يغيّره أي أدمن ثاني — أنت بس.</div>
+
+      <div style="border-top:1px solid #E3D6BC;margin-top:14px;padding-top:12px">
+        <div style="font-size:12px;color:#C5A880;font-family:'Scheherazade New',serif;margin-bottom:8px">تغيير اسمي أو رقمي السري (الأدمن الأساسي)</div>
+        <input id="mainadmin-new-name" class="mod-input" type="text" placeholder="اسم جديد (اختياري، اتركه فاضي لعدم التغيير)" style="margin-bottom:8px">
+        <input id="mainadmin-new-pass" class="mod-input" type="password" placeholder="رقم سري جديد (اختياري، اتركه فاضي لعدم التغيير)" style="margin-bottom:8px">
+        <button onclick="changeMainAdminCredentials()" class="login-btn" style="background:#4A3B32">حفظ التغيير</button>
+        <div id="mainadmin-cred-msg" style="color:#16A34A;font-size:11px;text-align:center;margin-top:6px;font-family:'Scheherazade New',serif"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -2528,6 +2536,34 @@ function togglePublicEdit(){
     publicEditRef.set(PUBLIC_EDIT).then(function(){ pendingSaveCount--; hideSavingIndicator(true); }).catch(function(e){ pendingSaveCount--; hideSavingIndicator(false); console.log('Save failed:', e); });
   }
 }
+function changeMainAdminCredentials(){
+  if(!isMainAdmin()) return;
+  var msg = document.getElementById('mainadmin-cred-msg');
+  var newName = document.getElementById('mainadmin-new-name').value.trim();
+  var newPass = document.getElementById('mainadmin-new-pass').value.trim();
+  if(!newName && !newPass){
+    msg.style.color='#B23A3A'; msg.textContent='\u0627\u0643\u062a\u0628 \u0627\u0633\u0645 \u062c\u062f\u064a\u062f \u0623\u0648 \u0631\u0642\u0645 \u062c\u062f\u064a\u062f \u0639\u0644\u0649 \u0627\u0644\u0623\u0642\u0644';
+    return;
+  }
+  if(!confirm('\u062a\u0623\u0643\u064a\u062f: \u0647\u0630\u0627 \u0631\u0627\u062d \u064a\u063a\u064a\u0651\u0631 \u0628\u064a\u0627\u0646\u0627\u062a \u062f\u062e\u0648\u0644\u0643 \u0627\u0644\u0623\u0633\u0627\u0633\u064a\u0629. \u062a\u0623\u0643\u062f \u0625\u0646\u0643 \u062d\u0627\u0641\u0638 \u0627\u0644\u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u062c\u062f\u064a\u062f\u0629 \u0642\u0628\u0644 \u0645\u0627 \u062a\u0643\u0645\u0644\u061f')) return;
+  var oldName = currentUser;
+  var userData = USERS[oldName];
+  if(!userData){ msg.style.color='#B23A3A'; msg.textContent='\u062e\u0637\u0623 \u063a\u064a\u0631 \u0645\u062a\u0648\u0642\u0639'; return; }
+  if(newName && newName !== oldName){
+    if(USERS[newName]){ msg.style.color='#B23A3A'; msg.textContent='\u26a0 \u0641\u064a\u0647 \u062d\u0633\u0627\u0628 \u0622\u062e\u0631 \u0628\u0646\u0641\u0633 \u0627\u0644\u0627\u0633\u0645'; return; }
+    delete USERS[oldName];
+    USERS[newName] = userData;
+    currentUser = newName;
+  }
+  if(newPass){
+    USERS[currentUser].pass = newPass;
+  }
+  saveUsersToFirebase();
+  document.getElementById('mainadmin-new-name').value='';
+  document.getElementById('mainadmin-new-pass').value='';
+  msg.style.color='#16A34A'; msg.textContent='\u2713 \u062a\u0645 \u0627\u0644\u062d\u0641\u0638\u060c \u0627\u0633\u062a\u062e\u062f\u0645 \u0627\u0644\u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u062c\u062f\u064a\u062f\u0629 \u0644\u0644\u062f\u062e\u0648\u0644 \u0627\u0644\u0642\u0627\u062f\u0645';
+  setTimeout(function(){ msg.textContent=''; }, 3000);
+}
 function togglePhotoFeature(){
   if(!(currentUser && USERS[currentUser] && USERS[currentUser].protected)) return;
   var chk = document.getElementById('photo-feature-toggle');
@@ -3355,15 +3391,18 @@ function initFirebaseApp(){
         USERS = d;
       }
       var mainAdminName = '\u064a\u0627\u0633\u0631 \u0633\u0627\u0644\u0645';
-      if(USERS[mainAdminName]){
-        USERS[mainAdminName].protected = true;
-        USERS[mainAdminName].role = 'admin';
-      } else {
-        USERS[mainAdminName] = {pass:'1992', role:'admin', initials:'\u064a\u0633', protected:true};
+      var hasProtected = Object.keys(USERS).some(function(u){ return USERS[u].protected; });
+      if(!hasProtected){
+        if(USERS[mainAdminName]){
+          USERS[mainAdminName].protected = true;
+          USERS[mainAdminName].role = 'admin';
+        } else {
+          USERS[mainAdminName] = {pass:'1992', role:'admin', initials:'\u064a\u0633', protected:true};
+        }
       }
       Object.keys(USERS).forEach(function(uname){
-        if(uname === mainAdminName) return;
-        if(USERS[uname].role === 'admin' && !USERS[uname].protected){
+        if(USERS[uname].protected) return;
+        if(USERS[uname].role === 'admin'){
           USERS[uname].role = 'member';
           if(!USERS[uname].perms){
             USERS[uname].perms = {add:true, edit:true, del:true, photo:true};
