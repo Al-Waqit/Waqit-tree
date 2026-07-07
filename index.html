@@ -95,11 +95,11 @@ body{font-family:'Scheherazade New',serif;background:#F4EFE6;color:#3B2F22;min-h
 .nw{display:flex;flex-direction:column;align-items:center;position:relative}
 .ncouple{display:flex;align-items:flex-start;position:relative}
 .heart-badge{width:26px;height:26px;border-radius:50%;background:#FBF8F2;border:2px solid #C5A880;color:#E0709A;font-size:12px;display:flex;align-items:center;justify-content:center;position:relative;top:30px;margin:0 -6px;z-index:3;flex-shrink:0;box-shadow:0 1px 5px rgba(59,47,34,0.12)}
-.np{cursor:pointer;font-family:'Scheherazade New',serif;z-index:2;position:relative;user-select:none;transition:all .2s;background:#FFFFFF;border:1px solid #E3D6BC;border-radius:18px;box-shadow:0 2px 10px rgba(59,47,34,0.07);padding:22px 20px 14px;min-width:148px;text-align:center;display:flex;flex-direction:column;align-items:center;white-space:nowrap}
+.np{cursor:pointer;font-family:'Scheherazade New',serif;z-index:2;position:relative;user-select:none;transition:all .2s;background:linear-gradient(165deg,#FFFEFB 0%,#FBF4E6 100%);border:1px solid #D9C4A0;border-radius:16px;box-shadow:0 2px 3px rgba(139,107,58,0.05),0 3px 8px rgba(90,66,36,0.07);padding:22px 20px 14px;min-width:148px;text-align:center;display:flex;flex-direction:column;align-items:center;white-space:nowrap}
 .np.search-highlight{animation:searchPulse 1.2s ease-in-out 2}
-@keyframes searchPulse{0%,100%{box-shadow:0 2px 10px rgba(59,47,34,0.07);border-color:#E3D6BC}50%{box-shadow:0 0 0 6px rgba(197,168,128,0.5);border-color:#C5A880}}
-.np::before{content:'';position:absolute;top:14px;bottom:14px;right:0;width:5px;border-radius:4px;background:#3B4D40}
-.np.fem::before{background:#C08A56}
+@keyframes searchPulse{0%,100%{box-shadow:0 3px 4px rgba(139,107,58,0.06),0 6px 16px rgba(90,66,36,0.1);border-color:#D9C4A0}50%{box-shadow:0 0 0 6px rgba(197,168,128,0.5);border-color:#C5A880}}
+.np::before{content:'';position:absolute;top:12px;bottom:12px;right:0;width:5px;border-radius:4px;background:linear-gradient(180deg,#4A6050,#2C3B30)}
+.np.fem::before{background:linear-gradient(180deg,#C99B5F,#A66E38)}
 .np-spouse{opacity:0.97;transform:scale(0.95)}
 .np-av{position:absolute;top:-16px;right:14px;width:36px;height:36px;border-radius:50%;display:none;align-items:center;justify-content:center;font-size:13px;font-weight:800;border:2.5px solid #3B4D40;background:#2C3B30;color:#FAF8F5;cursor:pointer;box-shadow:0 2px 6px rgba(59,47,34,0.15);flex-shrink:0;overflow:hidden}
 body.admin-mode .np-av{display:flex}
@@ -114,22 +114,22 @@ body.admin-mode .np-av{display:flex}
 .lv1>.ncouple>.np .np-name{font-size:16px}
 .lv2>.ncouple>.np,.lv3>.ncouple>.np,.lv4>.ncouple>.np,.lv5>.ncouple>.np,.lv6>.ncouple>.np,.lv7>.ncouple>.np{padding:18px 16px 12px;min-width:130px}
 .lv2>.ncouple>.np .np-name,.lv3>.ncouple>.np .np-name,.lv4>.ncouple>.np .np-name,.lv5>.ncouple>.np .np-name,.lv6>.ncouple>.np .np-name,.lv7>.ncouple>.np .np-name{font-size:13.5px}
-.np:hover{transform:translateY(-2px);box-shadow:0 5px 14px rgba(59,47,34,0.12)}
-.np.no-ch:hover{transform:none;box-shadow:0 2px 10px rgba(59,47,34,0.07)}
-.np.active{border-color:#3B4D40;box-shadow:0 4px 16px rgba(59,77,64,0.22)}
+.np:hover{transform:translateY(-2px);box-shadow:0 3px 4px rgba(139,107,58,0.06),0 6px 14px rgba(90,66,36,0.12)}
+.np.no-ch:hover{transform:none;box-shadow:0 2px 3px rgba(139,107,58,0.05),0 3px 8px rgba(90,66,36,0.07)}
+.np.active{border-color:#4A6050;box-shadow:0 2px 4px rgba(59,77,64,0.08),0 4px 12px rgba(59,77,64,0.16)}
 .nb{position:absolute;bottom:-11px;left:50%;transform:translateX(-50%);font-size:10px;padding:3px 10px;border-radius:20px;background:#3a2f1a;color:#C5A880;border:1px solid #C5A880;white-space:nowrap;cursor:pointer;z-index:4}
 .nb:hover{background:#4a3a20}
 .np.active .nb{background:#3B4D40;color:#FAF8F5;border-color:#3B4D40}
 .na{display:none}
 .no-ch .nb{display:none}
 .no-ch{cursor:default!important}
-.vln{width:2.5px;height:26px;background:#C5A880;flex-shrink:0;border-radius:2px}
+.vln{width:2.5px;height:26px;background:linear-gradient(180deg,#B8935F,#D9BC8E);flex-shrink:0;clip-path:polygon(30% 0,70% 0,100% 100%,0 100%)}
 .nkids{display:none;flex-direction:column;align-items:center;width:100%;overflow:visible}
 .nkids.open{display:flex;flex-direction:column;align-items:center;animation:unfold .3s ease}
 @keyframes unfold{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
 .nrow{display:flex;flex-direction:row;align-items:flex-start;justify-content:center;position:relative;padding-top:0;flex-wrap:nowrap}
 
-.nrow::before{content:'';position:absolute;top:0;left:0;right:0;height:2.5px;background:#C5A880;border-radius:2px}
+.nrow::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#D9BC8E,#B8935F,#D9BC8E);border-radius:2px}
 .nrow.solo::before{display:none}
 .nrow:not(.solo) > .ncol:first-child{padding-left:0}
 .nrow:not(.solo) > .ncol:last-child{padding-right:0}
@@ -138,9 +138,8 @@ body.admin-mode .np-av{display:flex}
 
 
 
-
 .ncol{display:flex;flex-direction:column;align-items:center;padding:0 8px;position:relative}
-.ncol::before{content:'';display:block;width:2.5px;height:26px;background:#C5A880;flex-shrink:0;border-radius:2px}
+.ncol::before{content:'';display:block;width:2.5px;height:26px;background:linear-gradient(180deg,#B8935F,#D9BC8E);flex-shrink:0;clip-path:polygon(30% 0,70% 0,100% 100%,0 100%)}
 .lv0>.nkids>.nrow>.ncol{padding:0 40px}
 .np.found{}
 .np.dim{opacity:0.18;pointer-events:none}
@@ -457,7 +456,7 @@ window.onerror = function(msg, src, line, col, err){
       <a onclick="document.querySelector('.tree-area').scrollIntoView({behavior:'smooth'})">الشجرة التفاعلية</a>
       <a id="ribbon-nasab-link" onclick="toggleNasab()" style="display:none">النسب إلى آدم</a>
       <a onclick="openSubtreeModal()">شجرة فرعية</a>
-      <a onclick="openCompareModal()">مقارنة</a>
+      <a onclick="openCompareModal()">درجة القرابة</a>
     </div>
   </div>
   </div>
@@ -637,7 +636,13 @@ window.onerror = function(msg, src, line, col, err){
 <div id="cmp-overlay" onclick="closeCompareModal()"></div>
 <div id="cmp-modal">
   <div style="background:#EFE7D8;padding:14px 20px;border-bottom:1px solid #E3D6BC;flex-shrink:0;display:flex;align-items:center;justify-content:space-between">
-    <div style="font-size:17px;color:#C5A880;font-weight:700;font-family:'Scheherazade New',serif">مقارنة النسب</div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:20px">🔗</span>
+      <div>
+        <div style="font-size:17px;color:#3B2F22;font-weight:700;font-family:'Scheherazade New',serif">وش قرابتنا؟</div>
+        <div style="font-size:10px;color:#8A7A63;font-family:'Scheherazade New',serif">اختر شخصين واكتشف صلة القرابة بينهم</div>
+      </div>
+    </div>
     <button onclick="closeCompareModal()" style="background:rgba(255,255,255,0.08);border:1px solid #C9BBA0;color:#8A7A63;width:28px;height:28px;border-radius:50%;cursor:pointer">✕</button>
   </div>
   <div style="overflow-y:auto;padding:16px;flex:1">
@@ -1537,7 +1542,7 @@ function fitZoomToScreen(){
   var containerWidth = container.clientWidth;
   if(naturalWidth <= 0 || containerWidth <= 0) return;
   var fitScale = containerWidth / naturalWidth;
-  var target = Math.max(0.2, Math.min(0.8, fitScale * 0.68));
+  var target = Math.max(0.1, Math.min(0.18, fitScale * 0.15));
   currentZoom = target;
   applyZoom();
 }
@@ -1888,8 +1893,9 @@ function comparePersons(){
   var maxLen=Math.max(p1.length, p2.length);
 
   // Build tree visual
-  var html='<div style="text-align:center;padding:8px 0 4px">';
-  html+='<div style="font-size:11px;color:#8A7A63;font-family:Scheherazade New,serif;margin-bottom:4px">\u0627\u0644\u0635\u0644\u0629: <span style="color:#16A34A">'+rel+'</span></div>';
+  var html='<div style="text-align:center;padding:14px 10px 10px;background:linear-gradient(180deg,#F0E6D2,#E8D2A0);border-radius:14px;margin-bottom:10px">';
+  html+='<div style="font-size:11px;color:#5C4D3A;font-family:Scheherazade New,serif;margin-bottom:4px">'+cmpP1.name+' \u0648'+cmpP2.name+'</div>';
+  html+='<div style="font-size:22px;font-weight:800;color:#2C3B30;font-family:Scheherazade New,serif">'+rel+'</div>';
   html+='</div>';
 
   // Ancestor node
@@ -3186,7 +3192,7 @@ function ppAddChild(){
   selFather = { name: name, path: (ppFindEntry(name)||{path:[name]}).path };
   var fq = document.getElementById('add-father-q'); fq.value = name;
   var sd = document.getElementById('selected-father'); sd.textContent = '\u2713 '+name; sd.style.display='block';
-  setTimeout(function(){ document.getElementById('add-new-name').focus(); }, 100);
+  setTimeout(function(){ var inp = document.querySelector('.add-new-name-input'); if(inp) inp.focus(); }, 100);
 }
 function ppDelete(){
   if(!getPerms().del) return;

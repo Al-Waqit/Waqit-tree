@@ -1,4 +1,4 @@
-const CACHE_NAME = 'waqit-tree-v2';
+const CACHE_NAME = 'waqit-tree-v3';
 const urlsToCache = [
   './manifest.json',
   './icons/icon-192.png',
@@ -47,7 +47,7 @@ self.addEventListener('fetch', function(event) {
 
   if (isPageRequest) {
     event.respondWith(
-      fetch(event.request).then(function(response) {
+      fetch(event.request, {cache: 'no-store'}).then(function(response) {
         var copy = response.clone();
         caches.open(CACHE_NAME).then(function(cache){ cache.put(event.request, copy); });
         return response;
