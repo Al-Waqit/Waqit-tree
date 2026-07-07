@@ -1542,7 +1542,7 @@ function fitZoomToScreen(){
   var containerWidth = container.clientWidth;
   if(naturalWidth <= 0 || containerWidth <= 0) return;
   var fitScale = containerWidth / naturalWidth;
-  var target = Math.max(0.1, Math.min(0.18, fitScale * 0.15));
+  var target = Math.max(0.25, Math.min(0.45, fitScale * 0.4));
   currentZoom = target;
   applyZoom();
 }
