@@ -1038,6 +1038,12 @@ function makeCard(d, lv, isSpouseCard, fatherName, path){
   if(d.photo){ var im=document.createElement('img'); im.src=d.photo; im.alt=d.n; av.appendChild(im); }
   else { av.textContent = initialsOf(d.n); }
   av.title = '\u0639\u0631\u0636 \u0627\u0644\u0645\u0644\u0641 \u0627\u0644\u0634\u062e\u0635\u064a';
+  if(!isSpouseCard){
+    av.addEventListener('click', function(ev){
+      ev.stopPropagation();
+      openPersonPage(d.n, path);
+    });
+  }
   p.appendChild(av);
   var nameWrap = document.createElement('span'); nameWrap.style.cssText='display:inline-flex;align-items:baseline;gap:4px';
   var nm = document.createElement('span'); nm.className='np-name';
@@ -1053,17 +1059,6 @@ function makeCard(d, lv, isSpouseCard, fatherName, path){
     var dt = document.createElement('span'); dt.className='np-dates';
     dt.textContent = (d.by||'') + ' \u2013 ' + (d.dy||'');
     p.appendChild(dt);
-  }
-  if (hasK) {
-    var b = document.createElement('span'); b.className = 'nb'; b.textContent = '\u25be'; p.appendChild(b);
-  }
-  if(!isSpouseCard){
-    p.addEventListener('click', function(ev){
-      if(ev.target.closest && ev.target.closest('.nb')) return;
-      openPersonPage(d.n, path);
-    });
-  } else {
-    p.style.cursor = 'default';
   }
   return p;
 }
@@ -1100,10 +1095,8 @@ function build(d, lv, fatherName, path) {
     kids._fatherName = d.n;
     kids._path = path;
     w.appendChild(kids);
-    var nbBadge = p.querySelector('.nb');
-    (function(pp, kk, vv, badge) {
-      badge.addEventListener('click', function(ev){
-        ev.stopPropagation();
+    (function(pp, kk, vv) {
+      pp.addEventListener('click', function(ev){
         var beforeRect = pp.getBoundingClientRect();
         ensureKidsBuilt(kk);
         var open = pp.classList.toggle('active');
@@ -1118,7 +1111,7 @@ function build(d, lv, fatherName, path) {
           window.scrollBy(0, dy);
         }
       });
-    })(p, kids, vl, nbBadge);
+    })(p, kids, vl);
     if (lv === 0) { ensureKidsBuilt(kids); p.classList.add('active'); kids.classList.add('open'); vl.style.display = ''; }
   }
   return w;
